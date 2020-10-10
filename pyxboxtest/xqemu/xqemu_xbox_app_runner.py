@@ -8,7 +8,7 @@ from typing import Any, Dict, Optional
 
 from qmp import QEMUMonitorProtocol
 
-from ..utils import get_unused_ports, retry_every
+from .._utils import get_unused_ports, retry_every
 from . import XQEMURAMSize, XQEMUFTPClient, XQEMUKDCapturer
 
 # Not particularly clean but it works

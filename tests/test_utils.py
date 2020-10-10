@@ -1,8 +1,8 @@
-"""Test the various utilities in :py:mod:`pyxboxtest.utils`"""
+"""Test the various utilities in :py:mod:`pyxboxtest._utils`"""
 import time
 
 import pytest
-from pyxboxtest.utils import get_unused_ports, retry_every
+from pyxboxtest._utils import get_unused_ports, retry_every
 from mock import Mock
 
 
@@ -10,9 +10,10 @@ def _all_unique(elements) -> bool:
     return len(elements) == len(set(elements))
 
 
-@pytest.fixture(scope="function")
-def sleepless(monkeypatch):
-    monkeypatch.setattr(time, "sleep", Mock())
+@pytest.fixture(scope="function", autouse=True)
+def mocked_time_sleep(mocker):
+    """Don't make use wait for time.sleep"""
+    mocker.patch("time.sleep")
 
 
 @pytest.fixture(scope="function")
@@ -26,7 +27,6 @@ def mock_exception_with_call_count():
     return mock
 
 
-@pytest.mark.usefixtures("sleepless")
 class TestRetryEvery:
     """tests for :py:func:`~pyxboxtest.utils.retry_every`"""
 
@@ -49,9 +49,7 @@ class TestRetryEvery:
         ), "callback called max_tries_times if it throws an exception every time"
 
     @pytest.mark.parametrize("delay_before_retry", tuple(range(1, 4)))
-    def test_max_retries_exception_every_time(
-        self, delay_before_retry, mock_exception_with_call_count
-    ):
+    def test_correct_delay(self, delay_before_retry, mock_exception_with_call_count):
         """Ensure that sleep is called correctly when the callback throws an exception"""
         try:
             retry_every(
@@ -61,13 +59,13 @@ class TestRetryEvery:
             )
         except:
             pass  # Don't care about whether it really raises an exception or not here
-        sleep_call_args = time.sleep.call_args_list
         assert (
-            len(sleep_call_args) == 2
+            time.sleep.call_count == 2
         ), "sleep called after each exception but the last"
+        expected_args = (delay_before_retry,)
         assert all(
-            x == delay_before_retry for x in sleep_call_args
-        ), "sleep called after each exception but the last"
+            call.args == expected_args for call in time.sleep.call_args_list
+        ), "sleep called with the correct delay"
 
     @pytest.mark.parametrize("throws_exception_for", tuple(range(1, 4)))
     def test_max_retries_exception_n_times(self, throws_exception_for):
@@ -84,7 +82,9 @@ class TestRetryEvery:
 
 @pytest.mark.parametrize("number_of_ports", tuple(range(1, 4)))
 class TestGetUnusedPorts:
-    """tests for :py:func:`~pyxboxtest.utils.get_unused_ports`"""
+    """tests for :py:func:`~pyxboxtest.utils.get_unused_ports`
+    There is no mocking here to be sure that it actually works.
+    """
 
     def test_num_ports(self, number_of_ports):
         """Ensures that the correct number of ports are returned"""

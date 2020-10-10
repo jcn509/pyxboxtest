@@ -1,6 +1,6 @@
 import socket
 
-from ..utils import retry_every
+from .._utils import retry_every
 
 
 class XQEMUKDCapturer:

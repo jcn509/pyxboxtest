@@ -6,10 +6,12 @@ verify_ssl = true
 [dev-packages]
 pylint = "*"
 black = "*"
+pipenv-setup = "*"
+mock = "*"
+pytest-mock = "*"
 
 [packages]
 pyxboxtest = {editable = true, path = "."}
-mock = "*"
 
 [requires]
 python_version = "3.8"

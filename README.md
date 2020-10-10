@@ -4,7 +4,9 @@ Supports [XQEMU](https://github.com/xqemu/xqemu) and hopefully soon [Cxbx-Reload
 # Usage
 This library is designed to be used with pytest, if you are not already familiair with pytest I suggest you read the [pytest documentation](https://docs.pytest.org) before continuing. After you have installed it you should add `pytest_plugins = ("pyxboxtest.pytest_plugin",)` to your conftest.py.
 
-# Implemented
+An extra command line argument `--headless` may be passed to pytest to tell it to execute the tests in headless mode (no XQEMU window is visible when running the tests). This is nice if you want to run tests in the background whilst you do something else and it may be faster.
+
+# Features
  - Running games/apps
  - Capturing kernel debug output
  - Controller input (uses Qemu's monitor rather than faking keyboard events so you can use your computer for other tasks without it interfering)
