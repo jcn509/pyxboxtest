@@ -1,5 +1,8 @@
-# WIP end-to-end test framework for Xbox software built with the NXDK
-Supports XQEMU and hopefully soon CXBX-R. XQEMU may well be better, as it is unclear how well supported nxdk is with CXBX-R. CXBX-R support would be nice as with CXBX-R (unlike with XQEMU) you do not need a copy of the BiOS or MCPX rom, and that would make it far easier to run tests on CI platforms legally.
+# WIP end-to-end test framework for Xbox software built with the [nxdk](https://github.com/XboxDev/nxdk)
+Supports [XQEMU](https://github.com/xqemu/xqemu) and hopefully soon [Cxbx-Reloaded](https://github.com/Cxbx-Reloaded/Cxbx-Reloaded). XQEMU may well be better, as it is unclear how well supported nxdk is with Cxbx-Reloaded. Cxbx-Reloaded support would be nice as with Cxbx-Reloaded (unlike with XQEMU) you do not need a copy of the BiOS or MCPX rom, and that would make it far easier to use and would mean you could run tests on CI platforms legally.
+
+# Usage
+This library is designed to be used with pytest, if you are not already familiair with pytest I suggest you read the [pytest documentation](https://docs.pytest.org) before continuing. After you have installed it you should add `pytest_plugins = ("pyxboxtest.pytest_plugin",)` to your conftest.py.
 
 # Implemented
  - Running games/apps
@@ -22,12 +25,11 @@ Supports XQEMU and hopefully soon CXBX-R. XQEMU may well be better, as it is unc
   - Automatically copy a HDD image before an app is run so that the changes made won't affect other tests
   - To keep things efficient we can:
     - Use QEMU's copy on write drive creation feature
-- Headless mode should be toggled on/off only via a command line parameter
 
 ## If time allows
 - Pause/continue execution using QEMU's monitor
 - Investigate https://github.com/mborgerson/xqemu-kernel. I couldn't get it to work :/ but if it could be used it would provide a way to run tests legally on some CI platform (currently tricky due to legal issues with the kernel)
-- Support for CXBX-R (tests should work regardless of which emulator is used, without much modification)
+- Support for Cxbx-Reloaded (tests should work regardless of which emulator is used, without much modification)
   - Currently NXDK support is not very good, so this may not happen for some time
   - May not be possible to support:
     - headless mode
@@ -38,4 +40,4 @@ Supports XQEMU and hopefully soon CXBX-R. XQEMU may well be better, as it is unc
 ## Once everthing else is done
 - Investigate support for qemu monitor based debugging
   - [xboxpy](https://github.com/XboxDev/xboxpy) will work __today__ so long as it works with XQEMU. We may be able to do some additional debugging using XQEMU's monitor without the overhead of debug libraries or XBDM.dll
-- Investigate support for running tests on real hardware. Should be possible using (some open source alternative to) XBDM.dll to control the box.
+- Investigate support for running tests on real hardware. Should be possible using (some legal alternative to) XBDM.dll to control the xbox, but there are some challenges to overcome such as faking controller input and loading HDD setup quickly.
