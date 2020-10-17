@@ -1,4 +1,6 @@
-"""A collection of modification operations that will be applied to a HDD template when it is created"""
+"""A collection of modification operations to be applied to a HDD template
+when it is created
+"""
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
@@ -60,14 +62,16 @@ class RenameFile(HDDModification):
 @dataclass(frozen=True)
 class BatchModification(HDDModification):
     """Perform a sequence of operations on a HDD image.
-    
-    Useful if you want to reuse a sequence of operations on different templates that don't share a common parent,
-    or if you want to give a meaninful name to the sequence
+
+    Useful if you want to reuse a sequence of operations on different
+    templates that don't share a common parent, or if you want to give a
+    meaninful name to the sequence
     """
 
     modifications: Tuple[HDDModification, ...]
 
     @overrides
     def perform_modification(self, hdd_modifier: _XQEMUHDDTemplateModifier) -> None:
+        """Perform all the modifications in order"""
         for modification in self.modifications:
             modification.perform_modification(hdd_modifier)

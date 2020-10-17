@@ -9,4 +9,3 @@ class _XQEMUFTPApp(XQEMUXboxAppRunner):
             hdd_filename=hdd_template_image_file_name,
             force_headless=True,
         )
-

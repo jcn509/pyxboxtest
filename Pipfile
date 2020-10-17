@@ -4,15 +4,19 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+pyxboxtest = {editable = true, path = "."}
 pylint = "*"
 black = "*"
-pipenv-setup = "*"
 mock = "*"
 pytest-mock = "*"
+pytype = "*"
+pipenv-setup = "*"
 
 [packages]
-pyxboxtest = {editable = true, path = "."}
 overrides = "*"
+pytest = "*"
+qmp = "*"
+install = "*"
 
 [requires]
 python_version = "3.8"

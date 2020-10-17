@@ -1,25 +1,26 @@
-"""Fixtures to manage the use of XQEMU HDD images"""
+"""Manage the use of XQEMU HDD images"""
 from __future__ import (
     annotations,
 )  # To allow a type hint on a method to be of the enclosing class
 import logging
 import os
 import subprocess
-from typing import Dict, Tuple
+from typing import Tuple
 
 import pytest
 
 from .xqemu_hdd_operations import HDDModification
 from ._xqemu_hdd_template_modifier import _XQEMUHDDTemplateModifier
 
-# qemu-img create -f qcow2 -b vm01.qcow2 img02.qcow2 to create a copy on write copyc
+# May use this later on, or maybe not
 # Shareable disk for allowing file access during a test
 # qemu-nbd --socket=/tmp/my_socket --share=2 ~/.xqemu_files/xbox_hdd.qcow2
 
-# https://pytest.org/en/latest/fixture.html#using-markers-to-pass-data-to-fixtures is an option for getting the base image name
-
 
 _LOGGER = logging.getLogger(__name__)
+
+_HDD_STORAGE_DIR = ""
+_HDD_TEMPLATE_STORAGE_DIR = ""
 
 
 def _set_temp_dir(tmp_path_factory) -> None:
@@ -33,7 +34,7 @@ def _set_temp_dir(tmp_path_factory) -> None:
 
 def _copy_hdd_image(original_image_filename: str, new_copy_filename: str) -> None:
     """Use qemu-img to create a COW copy of a HDD image"""
-    _LOGGER.debug(f"Copying HDD {original_image_filename} to {new_copy_filename}")
+    _LOGGER.debug("Copying HDD %s to %s", original_image_filename, new_copy_filename)
     subprocess.Popen(
         (
             "qemu-img",
@@ -63,13 +64,15 @@ class XQEMUHDDTemplate:
         base_image_file_path: str,
         hdd_modifications: Tuple[HDDModification, ...] = tuple(),
     ):
-        _LOGGER.debug(f"Creating template for {template_name}")
+        _LOGGER.debug("Creating template for %s", template_name)
         self._template_file_path = os.path.join(
             _HDD_TEMPLATE_STORAGE_DIR, template_name + ".qcow2",
         )
         if os.path.isfile(self._template_file_path):
             raise ValueError(
-                f"Cannot have more than one template called {template_name}. Have you returned a template from a fixture that is not session-scoped?"
+                f"Cannot have more than one template called {template_name}. \
+                    Have you returned a template from a fixture that is not \
+                        session-scoped?"
             )
         _copy_hdd_image(base_image_file_path, self._template_file_path)
         # Make all the changes here
@@ -92,7 +95,7 @@ class XQEMUHDDTemplate:
 
     def create_fresh_hdd(self) -> str:
         """Create a copy of the HDD template for use with an instance of XQEMU
-        :returns: the path to the image 
+        :returns: the path to the image
         """
         self._hdd_image_count += 1
         new_hdd_file_path = self._generate_fresh_hdd_file_path()
@@ -102,7 +105,8 @@ class XQEMUHDDTemplate:
     def create_child_template(
         self, template_name, additional_hdd_modifications: Tuple[HDDModification, ...]
     ) -> XQEMUHDDTemplate:
-        """:returns: a new template based off this one but with some additional changes"""
+        """:returns: a template based off this one but with some extra changes
+        """
         return XQEMUHDDTemplate(
             template_name,
             self._template_file_path,
@@ -112,7 +116,10 @@ class XQEMUHDDTemplate:
 
 @pytest.fixture(scope="session")
 def xqemu_blank_hdd_template() -> XQEMUHDDTemplate:
-    """A totally blank HDD image template. Set up like the stock Xbox HDD but with no files or folders"""
+    """A totally blank HDD image template.
+
+    Set up like the stock Xbox HDD but with no files or folders
+    """
     dirname = os.path.dirname(__file__)
     blank_hdd_filename = os.path.join(dirname, "blank_xbox_hdd.qcow2")
     return XQEMUHDDTemplate("blank_hdd", blank_hdd_filename)

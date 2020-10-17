@@ -1,4 +1,4 @@
-# WIP end-to-end test framework for Xbox software built with the [nxdk](https://github.com/XboxDev/nxdk)
+# WIP end-to-end test framework for Xbox software built with the [nxdk](https://github.com/XboxDev/nxdk) ![pyxboxtest](https://github.com/jcn509/pyxboxtest/workflows/pyxboxtest/badge.svg)
 Supports [XQEMU](https://github.com/xqemu/xqemu) and hopefully soon [Cxbx-Reloaded](https://github.com/Cxbx-Reloaded/Cxbx-Reloaded). XQEMU may well be better, as it is unclear how well supported nxdk is with Cxbx-Reloaded. Cxbx-Reloaded support would be nice as with Cxbx-Reloaded (unlike with XQEMU) you do not need a copy of the BiOS or MCPX rom, and that would make it far easier to use and would mean you could run tests on CI platforms legally.
 
 # Usage
@@ -33,6 +33,7 @@ Until I clean up this readme and write some proper docs, you can see some sample
 - Safe parallel test execution
   - Need to ensure that xqemu ports are selected and then used atomically
   - Need to ensure that new HDD file names are selected atomically
+- Get the package listed on PyPi
 
 ## If time allows
 - Pause/continue execution using QEMU's monitor
@@ -44,6 +45,9 @@ Until I clean up this readme and write some proper docs, you can see some sample
     - sending fake inputs to the app without generating fake keyboard input that would potentially interfere with other applications
     - screenshots that are not affected by the size of the window
       - May not be an issue if window size is the same as the Xbox's resolution by default
+
+## Development
+Pipenv is used to manage the dev environment, whilst setup.py is used to allow installing the library from pip. 
 
 ## Once everthing else is done
 - Investigate support for qemu monitor based debugging

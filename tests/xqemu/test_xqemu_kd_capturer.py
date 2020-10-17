@@ -14,17 +14,19 @@ def mocked_socket(mocker):
 
 
 @pytest.mark.parametrize("port", tuple(range(4)))
-def test_correct_socket(port):
+def test_correct_socket(port: int):
     """Very simple test to make sure that the correct socket is set up"""
     XQEMUKDCapturer(port)
-    socket.socket.connect.assert_called_with(("", port))
+    socket.socket.connect.assert_called_with(  # pytype: disable=attribute-error # pylint: disable=no-member
+        ("", port)
+    )
 
 
 @pytest.mark.parametrize(
     "lines_to_send",
     ("first test\nasdasdasd\n", "second test\nasdasdasd\n", "\ntest\n", "\n\n\n"),
 )
-def test_get_line(lines_to_send):
+def test_get_line(lines_to_send: str):
     """Ensure that we can correctly retrieve any number of lines that have been sent"""
     string_it = (byte for byte in bytes(lines_to_send, "ascii"))
     socket.socket.recv.side_effect = lambda n: bytes(next(string_it) for x in range(n))

@@ -34,7 +34,7 @@ def test_usb_code(xqemu_blank_hdd_template: XQEMUHDDTemplate):
         a_key_text = '"keys":"A"'
         assert a_key_text not in nothing_pressed, "A not pressed"
 
-        app.press_keys((XQEMUXboxControllerButtons.A,), hold_time=50)
+        app.press_controller_buttons((XQEMUXboxControllerButtons.A,), hold_time=50)
         a_pressed = kd.get_line()
         print(a_pressed, a_key_text in a_pressed)
         assert a_key_text in a_pressed, "A not pressed"

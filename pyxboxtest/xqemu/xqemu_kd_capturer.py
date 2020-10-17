@@ -1,3 +1,5 @@
+"""Captures kernel debug (serial port) output from XQEMU"""
+
 import socket
 
 from .._utils import retry_every
@@ -7,10 +9,12 @@ class XQEMUKDCapturer:
     """Captures kernel debug (serial port) output from XQEMU"""
 
     def __init__(self, port: int):
+        """:param port: the port on which to listen"""
         self._client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         retry_every(lambda: self._client.connect(("", port)))
 
     def close(self) -> None:
+        """Stop listening for serial port output"""
         self._client.close()
 
     def get_num_chars(self, num_chars: int, encoding: str = "ascii") -> str:

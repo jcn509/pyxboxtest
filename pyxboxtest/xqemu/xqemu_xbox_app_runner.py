@@ -3,13 +3,24 @@
 from contextlib import AbstractContextManager
 from ftplib import FTP
 import subprocess
-from typing import Any, Dict, Optional, Sequence
+from typing import Optional, Sequence
 
 from qmp import QEMUMonitorProtocol
 
 from .._utils import get_unused_ports, retry_every
-from . import XQEMURAMSize, XQEMUFTPClient, XQEMUKDCapturer
-from . import XQEMUXboxControllerButtons
+
+# Because pyxboxtest.xqemu imports XQEMUXboxAppRunner pytest falls over...
+# pytype: disable=pyi-error
+from . import (
+    XQEMUXboxControllerButtons,
+    XQEMURAMSize,
+    XQEMUFTPClient,
+    XQEMUKDCapturer,
+)
+
+# pytype: enable=pyi-error
+
+_HEADLESS = False
 
 
 def _set_headless(headless: bool) -> None:
@@ -31,7 +42,7 @@ class XQEMUXboxAppRunner(AbstractContextManager):
         ram_size: XQEMURAMSize = XQEMURAMSize.RAM64m,
         force_headless: bool = False,
     ):
-        """:param force_headless: not reccomended for general purpose use!"""
+        """:param force_headless: only use this if you are doing something fancy!"""
         self._hdd_filename = hdd_filename
         self._dvd_filename = dvd_filename
         self._ram_size = ram_size
@@ -39,14 +50,14 @@ class XQEMUXboxAppRunner(AbstractContextManager):
         self._kd_capturer_instance = None
         self._headless = force_headless or _HEADLESS
 
-    def get_app_suprocess(self):
-        return self._app
+        # Get their values in __enter__
+        self._ftp_forward_port = None
+        self._kd_forward_port = None
+        self._qemu_monitor_forward_port = None
+        self._app = None
 
     def get_ftp_client(
-        self,
-        username: Optional[str] = None,
-        password: Optional[str] = None,
-        timeout: float = 60.0,
+        self, username: Optional[str] = None, password: Optional[str] = None
     ) -> FTP:
         """This assumes that an FTP client is actually running in the app..."""
         ftp_client = XQEMUFTPClient(self._ftp_forward_port)
@@ -55,35 +66,37 @@ class XQEMUXboxAppRunner(AbstractContextManager):
         ftp_client.dir()
         return ftp_client
 
-    def press_keys(
+    def press_controller_buttons(
         self,
-        keys: Sequence[XQEMUXboxControllerButtons],
+        buttons: Sequence[XQEMUXboxControllerButtons],
         hold_time: Optional[int] = None,
     ) -> None:
+        """Press buttons on the virtual xbox controller"""
         # Need to figure out how to set hold time :s
-        args: Dict[str, Any] = {
-            "keys": [{"type": "qcode", "data": key.value} for key in keys]
-        }
+        args = {"keys": [{"type": "qcode", "data": key.value} for key in buttons]}
         if hold_time is not None:
             args["hold-time"] = hold_time
         print(args)
         self._get_qemu_monitor().command("send-key", **args)
 
     def save_screenshot(self, filename: str) -> None:
+        """Save a screenshot in ppm format"""
         self._get_qemu_monitor().command("screendump", filename=filename)
 
     def get_kd_capturer(self) -> XQEMUKDCapturer:
+        """Can be used to retrieve text from the serial port"""
         if self._kd_capturer_instance is None:
             self._kd_capturer_instance = XQEMUKDCapturer(self._kd_forward_port)
         return self._kd_capturer_instance
 
     def _get_qemu_monitor(self) -> QEMUMonitorProtocol:
+        """:returns: a qemu monitor thats used to communicate with XQEMU"""
         if self._qemu_monitor_instance is None:
             self._qemu_monitor_instance = QEMUMonitorProtocol(
                 ("", self._qemu_monitor_forward_port)
             )
             # If called too early it won't be able to connect first try as XQEMU is not ready yet
-            retry_every(lambda: self._qemu_monitor_instance.connect())
+            retry_every(self._qemu_monitor_instance.connect)
         return self._qemu_monitor_instance
 
     def __enter__(self):
@@ -91,7 +104,7 @@ class XQEMUXboxAppRunner(AbstractContextManager):
         # so as to avoid having multiple processes using the same ports
         # with parallel test execution
         mcpx_rom = "/home/josh/.xqemu_files/mcpx_1.0.bin"
-        xqemu_binary = "/bin/xqemu"
+        xqemu_binary = "xqemu"
         xbox_bios = "/home/josh/.xqemu_files/Complex_4627.bin"
 
         # To allow parallel test execution different instances must be using different ports

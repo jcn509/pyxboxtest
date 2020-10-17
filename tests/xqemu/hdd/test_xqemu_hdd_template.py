@@ -13,6 +13,12 @@ from pyxboxtest.xqemu.hdd import (
     RenameFile,
 )
 
+# Has to be done unfortuneately
+# pylint: disable=import-outside-toplevel
+
+# Grouped into classes as a way to organise the tests
+# pylint: disable=no-self-use
+
 # Note: there are deliberately spaces in the name, just to make sure that is OK.
 # This is seperate from the main image to avoid bugs in the code affecting the
 # main image without anyone realising.
@@ -30,7 +36,9 @@ def mocked_subprocess_popen(mocker):
 def _get_calls_to_qemu_img():
     """Get all sub process calls to qemu-img"""
     return [
-        call for call in subprocess.Popen.call_args_list if "qemu-img" in call.args[0]
+        call
+        for call in subprocess.Popen.call_args_list  # pytype: disable=attribute-error # pylint: disable=no-member
+        if "qemu-img" in call.args[0]
     ]
 
 
@@ -85,7 +93,8 @@ class TestWithoutCreatingImage:
     @pytest.mark.parametrize(
         "template_name", ("template1", "sdfdsf", "template2", "test", "thing",),
     )
-    def test_cant_create_template_that_exists(self, template_name: str, mocker):
+    def test_cant_create_2_templates_with_same_name(self, template_name: str, mocker):
+        """Tests that it is not possible to create 2 templates with the same name"""
         mocker.patch("os.path.isfile", lambda file: True)
         with pytest.raises(ValueError):
             XQEMUHDDTemplate(template_name, "whatever")
@@ -174,9 +183,8 @@ class TestWithoutCreatingImage:
         # There is no doubt a cleaner way of doing this...
         mock_init = mocker.Mock()
 
-        def init_replacement(self, a, b, c):
-            mock_init(a, b, c)
-            return None
+        def init_replacement(_, template_name, base_image_filename, hdd_modifications):
+            mock_init(template_name, base_image_filename, hdd_modifications)
 
         mocker.patch.object(XQEMUHDDTemplate, "__init__", init_replacement)
         parent_template.create_child_template(
@@ -238,7 +246,7 @@ class TestAndActuallyCreateImages:
         "template_name",
         ("templatealreadyexists1", "templatealreadyexists2", "asdfexists"),
     )
-    def test_cant_create_template_that_exists(self, template_name: str):
+    def test_cant_create_2_templates_with_same_name(self, template_name: str):
         """Ensure that you cannot create 2 templates with the same name"""
         XQEMUHDDTemplate(template_name, _TEST_BLANK_HDD_IMAGE)
         with pytest.raises(ValueError):

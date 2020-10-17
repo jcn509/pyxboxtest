@@ -1,12 +1,18 @@
 """Test the various utilities in :py:mod:`pyxboxtest._utils`"""
 import time
 
-import pytest
-from pyxboxtest._utils import get_unused_ports, retry_every
 from mock import Mock
+import pytest
+
+from pyxboxtest._utils import get_unused_ports, retry_every
+
+
+# Grouped into classes as a way to organise the tests
+# pylint: disable=no-self-use
 
 
 def _all_unique(elements) -> bool:
+    """:returns: True exactly if all the elements are unique"""
     return len(elements) == len(set(elements))
 
 
@@ -17,11 +23,16 @@ def mocked_time_sleep(mocker):
 
 
 @pytest.fixture(scope="function")
-def mock_exception_with_call_count():
+def mock_exception_with_call_count() -> Mock:
+    """:returns: a mock function that raises an exception that includes the
+    number of times is has been called
+    """
     mock = Mock()
 
-    def raise_count(m):
-        raise ValueError(f"Error ar try {m.call_count}")
+    def raise_count(mocked_function):
+        """Raises an exception that includes the call count of mocked_function
+        """
+        raise ValueError(f"Error ar try {mocked_function.call_count}")
 
     mock.side_effect = lambda m=mock: raise_count(m)
     return mock
@@ -31,7 +42,7 @@ class TestRetryEvery:
     """tests for :py:func:`~pyxboxtest.utils.retry_every`"""
 
     @pytest.mark.parametrize("max_tries", tuple(range(1, 4)))
-    def test_max_retries_no_exception(self, max_tries):
+    def test_max_retries_no_exception(self, max_tries: int):
         """Ensure that the function is called only once if it does not throw an exception"""
         callback = Mock()
         retry_every(callback, max_tries=max_tries)
@@ -39,7 +50,7 @@ class TestRetryEvery:
 
     @pytest.mark.parametrize("max_tries", tuple(range(1, 4)))
     def test_max_retries_exception_every_time(
-        self, max_tries, mock_exception_with_call_count
+        self, max_tries: int, mock_exception_with_call_count,
     ):
         """Ensure that the funtion is called max_tries times if it always throws an exception"""
         with pytest.raises(Exception, match=f"Error ar try {max_tries}"):
@@ -49,7 +60,9 @@ class TestRetryEvery:
         ), "callback called max_tries_times if it throws an exception every time"
 
     @pytest.mark.parametrize("delay_before_retry", tuple(range(1, 4)))
-    def test_correct_delay(self, delay_before_retry, mock_exception_with_call_count):
+    def test_correct_delay(
+        self, delay_before_retry: int, mock_exception_with_call_count,
+    ):
         """Ensure that sleep is called correctly when the callback throws an exception"""
         try:
             retry_every(
@@ -60,16 +73,20 @@ class TestRetryEvery:
         except:
             pass  # Don't care about whether it really raises an exception or not here
         assert (
-            time.sleep.call_count == 2
+            time.sleep.call_count  # pytype: disable=attribute-error # pylint: disable=no-member
+            == 2
         ), "sleep called after each exception but the last"
         expected_args = (delay_before_retry,)
         assert all(
-            call.args == expected_args for call in time.sleep.call_args_list
+            call.args == expected_args
+            for call in time.sleep.call_args_list  # pytype: disable=attribute-error # pylint: disable=no-member
         ), "sleep called with the correct delay"
 
     @pytest.mark.parametrize("throws_exception_for", tuple(range(1, 4)))
-    def test_max_retries_exception_n_times(self, throws_exception_for):
-        """Ensure that the funtion is called n+1 times if it throws an exception the first n times"""
+    def test_max_retries_exception_n_times(self, throws_exception_for: int):
+        """Ensure that the funtion is called n+1 times if it throws an exception the first n times
+        :param throws_exception_for: the number of calls for which it should throw an exception
+        """
         callback = Mock()
         callback.side_effect = [
             Exception("Thrown an exception") for _ in range(throws_exception_for)
@@ -86,17 +103,19 @@ class TestGetUnusedPorts:
     There is no mocking here to be sure that it actually works.
     """
 
-    def test_num_ports(self, number_of_ports):
+    def test_num_ports(self, number_of_ports: int):
         """Ensures that the correct number of ports are returned"""
         ports = tuple(get_unused_ports(number_of_ports))
         assert len(ports) == number_of_ports, "correct number of ports"
 
-    def test_ports_unique(self, number_of_ports):
+    def test_ports_unique(self, number_of_ports: int):
         """Ensures that no two ports that are returned are the same"""
         ports = tuple(get_unused_ports(number_of_ports))
         assert _all_unique(ports), "All the ports are unique"
 
-    def test_ports_are_ints(self, number_of_ports):
+    def test_ports_are_ints(self, number_of_ports: int):
         """Ensure that all the ports are integers"""
         ports = tuple(get_unused_ports(number_of_ports))
-        assert all(type(port) == int for port in ports), "All the ports are integers"
+        assert all(
+            isinstance(port, int) for port in ports
+        ), "All the ports are integers"

@@ -1,0 +1,49 @@
+name: pyxboxtest
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        python-version: [3.8]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install qemu-img
+      shell: bash
+      run: |
+        if [ "$RUNNER_OS" == "Linux" ]; then
+            sudo apt install qemu-utils
+        elif [ "$RUNNER_OS" == "Windows" ]; then
+            choco install qemu-img
+        elif [ "$RUNNER_OS" == "macOS" ]; then
+            brew install qemu
+        else
+            echo "$RUNNER_OS not supported"
+            exit 1
+        fi
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pipenv
+        pipenv install --dev
+    - name: Check that Pipfile and setup.py dependencies are in sync
+      run: |
+        pipenv run pipenv-setup check
+    - name: Lint the code with pylint
+      run: |
+        pipenv run pylint --fail-under=9 pyxboxtest tests
+    - name: Type check with pytype
+      run: |
+        pipenv run pytype pyxboxtest tests
+    - name: Test with pytest
+      run: |
+        pipenv run pytest tests

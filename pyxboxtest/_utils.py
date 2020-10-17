@@ -31,9 +31,9 @@ def get_unused_ports(number_of_ports: int) -> Generator[int, None, None]:
     """
 
     def get_sock_bind():
-        s = socket.socket()
-        s.bind(("", 0))
-        return s
+        sock = socket.socket()
+        sock.bind(("", 0))
+        return sock
 
     def get_port_close(sock):
         port = sock.getsockname()[1]

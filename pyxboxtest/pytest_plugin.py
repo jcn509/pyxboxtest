@@ -12,6 +12,7 @@ def _initial_framework_setup(request, tmp_path_factory):
 
 
 def pytest_addoption(parser):
+    """Add the headless option to pytests command line option parser"""
     parser.addoption(
         "--headless",
         action="store_true",
