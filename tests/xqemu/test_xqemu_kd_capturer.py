@@ -1,12 +1,9 @@
 """Tests for :py:class:`~pyxboxtest.xqemu.XQEMUKDCapturer`"""
-import itertools
 import socket
 
-import mock
 import pytest
 
 from pyxboxtest.xqemu import XQEMUKDCapturer
-from pyxboxtest._utils import get_unused_ports
 
 
 @pytest.fixture(scope="function", autouse=True)

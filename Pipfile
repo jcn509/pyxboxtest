@@ -12,6 +12,7 @@ pytest-mock = "*"
 
 [packages]
 pyxboxtest = {editable = true, path = "."}
+overrides = "*"
 
 [requires]
 python_version = "3.8"

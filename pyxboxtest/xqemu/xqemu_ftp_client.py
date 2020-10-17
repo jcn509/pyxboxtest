@@ -1,6 +1,9 @@
+"""Allow an FTP connection to an Xbox app running FTP server within XQEMU"""
 from ftplib import FTP
 
 from .._utils import retry_every
+
+from overrides import overrides
 
 
 class XQEMUFTPClient(FTP):
@@ -21,8 +24,10 @@ class XQEMUFTPClient(FTP):
 
         retry_every(try_connect)
 
+    @overrides
     def sendport(self, host, port):
         return super().sendport(self.externalip or host, port)
 
+    @overrides
     def sendeprt(self, host, port):
         return super().sendeprt(self.externalip or host, port)

@@ -6,6 +6,17 @@ This library is designed to be used with pytest, if you are not already familiai
 
 An extra command line argument `--headless` may be passed to pytest to tell it to execute the tests in headless mode (no XQEMU window is visible when running the tests). This is nice if you want to run tests in the background whilst you do something else and it may be faster.
 
+Any HDD images generated during test runs will by default be stored in a "pytest-NUM" directory in your systems temporary directory (in a subdirectory like xqemu_hdd_images) to change that you can use `--basetemp=mydir` when running pytest, but be careful as the contents of `mydir` will be erased! See the [docs](https://pytest.org/en/latest/tmpdir.html#the-default-base-temporary-directory) for more details.
+
+Keep HDD image file names relatively short to avoid issues with filenames that are too long.
+Make sure to give any HDD template fixtures session scope to avoid needless copies! On instantiation of very HDD template generator the base image is copied and any needed changes are made so don't instantiate any that you don't plan to use as its slow. This may change in the future in order to allow intermediate templates without the overhead!
+
+You may have issues if you try and instantiate globally, I suggest only doing so in a test/function/fixture (IMO in almost every situation you should be using a fixture and not a global variable anyway).
+
+In order to run the tests in this repo (i.e. the unit tests for the framework itself), you do not need to have XQEMU installed but you do need qemu-img (which is installed as part of QEMU).
+
+Document HDD copy/cleanup - fast using COW and only doing it when necessary. Strongly discourage ever using an HDD image directly
+
 # Features
  - Running games/apps
  - Capturing kernel debug output
@@ -15,18 +26,13 @@ An extra command line argument `--headless` may be passed to pytest to tell it t
 
 # TODO
 ## Definitely
+- Refactor the FTP connection code. Instead accept a list of ports (and IPs??) that should be forwarded to *some other port* then we capture any network traffic we want. Will need to provide an example of this for FTP.
 - Support for HDD read/write (outside of Xbox apps)
-  - Until there is a nice way to read/write HDD images on PC it will require either:
-    - An app with FTP or some other protocol implemented running on XQEMU
-      - Would be nice to provide a library that can be linked againts to allow this while your app is running
-    - This may take the form of some extension to 
-  - Some legal/opensource alternative to XBDM.dll
-  - Some wrapper around fatxplorer or some other tool might be possible?
+  - Implementation uses an Xbox app running an FTP server (there is an easy to use wrapper around this)
 - Documentation
-- Support for automated HDD copy/cleanup
-  - Automatically copy a HDD image before an app is run so that the changes made won't affect other tests
-  - To keep things efficient we can:
-    - Use QEMU's copy on write drive creation feature
+- Safe parallel test execution
+  - Need to ensure that xqemu ports are selected and then used atomically
+  - Need to ensure that new HDD file names are selected atomically
 
 ## If time allows
 - Pause/continue execution using QEMU's monitor

@@ -3,7 +3,6 @@
 from contextlib import AbstractContextManager
 from ftplib import FTP
 import subprocess
-import sys
 from typing import Any, Dict, Optional
 
 from qmp import QEMUMonitorProtocol
@@ -11,14 +10,11 @@ from qmp import QEMUMonitorProtocol
 from .._utils import get_unused_ports, retry_every
 from . import XQEMURAMSize, XQEMUFTPClient, XQEMUKDCapturer
 
-# Not particularly clean but it works
-# Not sure if pytest provides a better way than this?
-_HEADLESS = "--headless" in sys.argv
 
-
-# qemu-img create -f qcow2 -b vm01.qcow2 img02.qcow2 to create a copy on write copyc
-# Shareable disk for allowing file access during a test
-# qemu-nbd --socket=/tmp/my_socket --share=2 ~/.xqemu_files/xbox_hdd.qcow2
+def _set_headless(headless: bool) -> None:
+    """For internal use only!"""
+    global _HEADLESS
+    _HEADLESS = headless
 
 
 class XQEMUXboxAppRunner(AbstractContextManager):
@@ -32,12 +28,15 @@ class XQEMUXboxAppRunner(AbstractContextManager):
         hdd_filename: Optional[str] = None,
         dvd_filename: Optional[str] = None,
         ram_size: XQEMURAMSize = XQEMURAMSize.RAM64m,
+        force_headless: bool = False,
     ):
+        """:param force_headless: not reccomended for general purpose use!"""
         self._hdd_filename = hdd_filename
         self._dvd_filename = dvd_filename
         self._ram_size = ram_size
         self._qemu_monitor_instance = None
         self._kd_capturer_instance = None
+        self._headless = force_headless or _HEADLESS
 
     def get_app_suprocess(self):
         return self._app
@@ -117,7 +116,7 @@ class XQEMUXboxAppRunner(AbstractContextManager):
             "-qmp",
             f"tcp::{self._qemu_monitor_forward_port},server,nowait",
         )
-        if _HEADLESS:
+        if self._headless:
             xqemu_args += ("-display", "egl-headless")
 
         if self._hdd_filename is not None:
