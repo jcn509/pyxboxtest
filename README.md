@@ -9,13 +9,13 @@ An extra command line argument `--headless` may be passed to pytest to tell it t
 Any HDD images generated during test runs will by default be stored in a "pytest-NUM" directory in your systems temporary directory (in a subdirectory like xqemu_hdd_images) to change that you can use `--basetemp=mydir` when running pytest, but be careful as the contents of `mydir` will be erased! See the [docs](https://pytest.org/en/latest/tmpdir.html#the-default-base-temporary-directory) for more details.
 
 Keep HDD image file names relatively short to avoid issues with filenames that are too long.
-Make sure to give any HDD template fixtures session scope to avoid needless copies! On instantiation of very HDD template generator the base image is copied and any needed changes are made so don't instantiate any that you don't plan to use as its slow. This may change in the future in order to allow intermediate templates without the overhead!
-
-You may have issues if you try and instantiate globally, I suggest only doing so in a test/function/fixture (IMO in almost every situation you should be using a fixture and not a global variable anyway).
+Make sure to give any HDD template fixtures session scope to avoid needless copies! On instantiation of every HDD template generator the base image is (COW) copied and any needed changes are made so don't instantiate any that you don't plan to use it. This really shouldn't be an issue as there is no good reason to make a template that you don't use... You may have issues if you try and instantiate HDD templates globally, I suggest only doing so in a test/function/fixture (IMO in almost every situation you should be using a fixture and not a global variable anyway).
 
 In order to run the tests in this repo (i.e. the unit tests for the framework itself), you do not need to have XQEMU installed but you do need qemu-img (which is installed as part of QEMU).
 
-Document HDD copy/cleanup - fast using COW and only doing it when necessary. Strongly discourage ever using an HDD image directly
+Creating HDDs using templates is fast and space efficient as it only create a COW (copy on write) copy. I would reccomend that you always generate a fresh HDD from a template to avoid changes to a HDD during a test affecting other tests or future test runs.
+
+Until I clean up this readme and write some proper docs, you can see some sample tests in the sample_tests folder.
 
 # Features
  - Running games/apps

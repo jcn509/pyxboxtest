@@ -3,12 +3,13 @@
 from contextlib import AbstractContextManager
 from ftplib import FTP
 import subprocess
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Sequence
 
 from qmp import QEMUMonitorProtocol
 
 from .._utils import get_unused_ports, retry_every
 from . import XQEMURAMSize, XQEMUFTPClient, XQEMUKDCapturer
+from . import XQEMUXboxControllerButtons
 
 
 def _set_headless(headless: bool) -> None:
@@ -54,11 +55,18 @@ class XQEMUXboxAppRunner(AbstractContextManager):
         ftp_client.dir()
         return ftp_client
 
-    def press_key(self, key: str, hold_time: Optional[int] = None) -> None:
+    def press_keys(
+        self,
+        keys: Sequence[XQEMUXboxControllerButtons],
+        hold_time: Optional[int] = None,
+    ) -> None:
         # Need to figure out how to set hold time :s
-        args: Dict[str, Any] = {"keys": [{"type": "qcode", "data": key}]}
+        args: Dict[str, Any] = {
+            "keys": [{"type": "qcode", "data": key.value} for key in keys]
+        }
         if hold_time is not None:
             args["hold-time"] = hold_time
+        print(args)
         self._get_qemu_monitor().command("send-key", **args)
 
     def save_screenshot(self, filename: str) -> None:
