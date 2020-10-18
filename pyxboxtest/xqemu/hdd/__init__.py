@@ -1,5 +1,5 @@
 """Tools and fixtures for working with XQEMU HDD images"""
-from .xqemu_hdd_operations import (
+from .xqemu_hdd_modifications import (
     AddFile,
     BatchModification,
     DeleteFile,

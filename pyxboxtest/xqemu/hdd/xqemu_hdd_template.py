@@ -9,7 +9,7 @@ from typing import Tuple
 
 import pytest
 
-from .xqemu_hdd_operations import HDDModification
+from .xqemu_hdd_modifications import HDDModification
 from ._xqemu_hdd_template_modifier import _XQEMUHDDTemplateModifier
 
 # May use this later on, or maybe not
