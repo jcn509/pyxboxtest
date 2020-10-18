@@ -76,9 +76,10 @@ class XQEMUHDDTemplate:
             )
         _copy_hdd_image(base_image_file_path, self._template_file_path)
         # Make all the changes here
-        with _XQEMUHDDTemplateModifier(self._template_file_path) as hdd_modifier:
-            for change in hdd_modifications:
-                change.perform_modification(hdd_modifier)
+        if hdd_modifications:
+            with _XQEMUHDDTemplateModifier(self._template_file_path) as hdd_modifier:
+                for change in hdd_modifications:
+                    change.perform_modification(hdd_modifier)
 
         self._hdd_modifications = hdd_modifications
         self._hdd_image_count = 0

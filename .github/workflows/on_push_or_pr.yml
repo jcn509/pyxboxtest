@@ -42,6 +42,8 @@ jobs:
       run: |
         pipenv run pylint --fail-under=9 pyxboxtest tests
     - name: Type check with pytype
+      # Won't run on Windows without bash...
+      shell: bash
       run: |
         pipenv run pytype pyxboxtest tests
     - name: Test with pytest

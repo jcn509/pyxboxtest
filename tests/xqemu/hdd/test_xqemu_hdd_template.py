@@ -33,6 +33,26 @@ def mocked_subprocess_popen(mocker):
     mocker.patch("subprocess.Popen")
 
 
+@pytest.fixture(autouse=True)
+def mock_xqemu_hdd_template_modifier(mocker):
+    """We don't want to launch an instance of XQEMU and actually modify a HDD
+    """
+    return mocker.patch(
+        "pyxboxtest.xqemu.hdd.xqemu_hdd_template._XQEMUHDDTemplateModifier"
+    )
+
+
+@pytest.fixture(autouse=True)
+def mock_xqemu_hdd_modification_for_use_in_this_moduke(mocker):
+    """Mock all instances of subclasses of
+    :py:class:`~`pyxboxtest.xqemu.hdd.HDDModification` for instantiation in
+    these tests
+    """
+    mocker.patch.object(AddFile, "perform_modification")
+    mocker.patch.object(DeleteFile, "perform_modification")
+    mocker.patch.object(RenameFile, "perform_modification")
+
+
 def _get_calls_to_qemu_img():
     """Get all sub process calls to qemu-img"""
     return [
@@ -98,6 +118,48 @@ class TestWithoutCreatingImage:
         mocker.patch("os.path.isfile", lambda file: True)
         with pytest.raises(ValueError):
             XQEMUHDDTemplate(template_name, "whatever")
+
+    def test_no_modifications_no_modifier_created(
+        self, mock_xqemu_hdd_template_modifier
+    ):
+        """Ensure that if no modifications are wanted, we do not bother
+        instantiating a modifer
+        """
+        XQEMUHDDTemplate("any template name", "whatever")
+        mock_xqemu_hdd_template_modifier.assert_not_called()
+
+    @pytest.mark.parametrize(
+        "template_name, hdd_modifications",
+        (
+            ("template1", (AddFile("test1", "test2"),)),
+            ("asdasd", (RenameFile("old", "new"),)),
+            ("template2", (RenameFile("old", "new"), DeleteFile("test"))),
+            ("testtesttest", (AddFile("one", "two"), DeleteFile("3"))),
+        ),
+    )
+    def test_modifications_applied_correctly(
+        self,
+        template_name: str,
+        hdd_modifications: Tuple[HDDModification],
+        mock_xqemu_hdd_template_modifier,
+    ):
+        """Ensure that a modifier for the template is created if we want
+        modifications to be made
+        """
+        XQEMUHDDTemplate(template_name, "whatever", hdd_modifications)
+        print(
+            dir(mock_xqemu_hdd_template_modifier),
+            mock_xqemu_hdd_template_modifier.method_calls,
+        )
+        mock_xqemu_hdd_template_modifier.assert_called_once_with(
+            _get_hdd_template_path(template_name)
+        )
+        for hdd_modification in hdd_modifications:
+            # pytype: disable=attribute-error # pylint: disable=no-member
+            hdd_modification.perform_modification.assert_called_once_with(
+                mock_xqemu_hdd_template_modifier.return_value.__enter__.return_value
+            )
+            # pytype: enable=attribute-error # pylint: enable=no-member
 
     @pytest.mark.parametrize(
         "template_name, base_image_filename",
@@ -180,13 +242,7 @@ class TestWithoutCreatingImage:
         )
         parent_template_path = _get_hdd_template_path(parent_template_name)
 
-        # There is no doubt a cleaner way of doing this...
-        mock_init = mocker.Mock()
-
-        def init_replacement(_, template_name, base_image_filename, hdd_modifications):
-            mock_init(template_name, base_image_filename, hdd_modifications)
-
-        mocker.patch.object(XQEMUHDDTemplate, "__init__", init_replacement)
+        mock_init = mocker.patch.object(XQEMUHDDTemplate, "__init__", return_value=None)
         parent_template.create_child_template(
             child_template_name, child_hdd_modifications
         )

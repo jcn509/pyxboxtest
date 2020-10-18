@@ -20,17 +20,17 @@ class _XQEMUHDDTemplateModifier(AbstractContextManager):
         """:param local_filename: filename to copy to the Xbox
         :param xbox_filename: filename on the Xbox
         """
-        pass
+        raise NotImplementedError
 
     def delete_file(self, filename: str) -> None:
         """:param filename: filename on the Xbox"""
-        pass
+        raise NotImplementedError
 
     def rename_file(self, old_filename: str, new_filename: str) -> None:
         """:param old_filename: filename on the Xbox of the file to be renamed
         :param new_filename: filename after the renaming
         """
-        pass
+        raise NotImplementedError
 
     def __exit__(self, exc_type, exc_value, traceback):
         self._app.__exit__(exc_type, exc_value, traceback)
