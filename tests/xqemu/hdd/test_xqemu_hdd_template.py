@@ -230,9 +230,8 @@ class TestWithoutCreatingImage:
         :py:func:`~pyxboxtest.xqemu.hdd.XQEMUHDDTemplate.create_child_template`
 
         Ensures that the parent template image is the one that is passed as
-        the base image to the child and that the modifications passed to it
-        are all the modifications made to the parent followed by the extra
-        ones for the child.
+        the base image to the child and that the correct modifications are
+        applied to the child.
         """
         parent_template_name = "parent template"
         parent_template = XQEMUHDDTemplate(
@@ -246,10 +245,11 @@ class TestWithoutCreatingImage:
         parent_template.create_child_template(
             child_template_name, child_hdd_modifications
         )
+        # The child should only recieve the child_hdd_modifications as the
+        # parent_hdd_modifications havs already been applied to the image
+        # that it recieves.
         mock_init.assert_called_once_with(
-            child_template_name,
-            parent_template_path,
-            parent_hdd_modifications + child_hdd_modifications,
+            child_template_name, parent_template_path, child_hdd_modifications,
         )
 
     @pytest.mark.parametrize(

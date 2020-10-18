@@ -81,7 +81,6 @@ class XQEMUHDDTemplate:
                 for change in hdd_modifications:
                     change.perform_modification(hdd_modifier)
 
-        self._hdd_modifications = hdd_modifications
         self._hdd_image_count = 0
 
     def _generate_fresh_hdd_file_path(self) -> str:
@@ -108,10 +107,12 @@ class XQEMUHDDTemplate:
     ) -> XQEMUHDDTemplate:
         """:returns: a template based off this one but with some extra changes
         """
+        # Build a new template that uses the image for this template as its
+        # base image.
+        # We do not need to pass the changes made to the parent to the child
+        # as they have already been applied to the image.
         return XQEMUHDDTemplate(
-            template_name,
-            self._template_file_path,
-            self._hdd_modifications + additional_hdd_modifications,
+            template_name, self._template_file_path, additional_hdd_modifications,
         )
 
 
