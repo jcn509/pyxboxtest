@@ -3,7 +3,7 @@
 from contextlib import AbstractContextManager
 from ftplib import FTP
 import subprocess
-from typing import Optional, Sequence
+from typing import Optional, Sequence, Tuple
 
 from qmp import QEMUMonitorProtocol
 
@@ -12,10 +12,11 @@ from .._utils import get_unused_ports, retry_every
 # Because pyxboxtest.xqemu imports XQEMUXboxAppRunner pytest falls over...
 # pytype: disable=pyi-error
 from . import (
-    XQEMUXboxControllerButtons,
-    XQEMURAMSize,
     XQEMUFTPClient,
     XQEMUKDCapturer,
+    XQEMUNetworkForwardRule,
+    XQEMURAMSize,
+    XQEMUXboxControllerButtons,
 )
 
 # pytype: enable=pyi-error
@@ -41,6 +42,7 @@ class XQEMUXboxAppRunner(AbstractContextManager):
         dvd_filename: Optional[str] = None,
         ram_size: XQEMURAMSize = XQEMURAMSize.RAM64m,
         force_headless: bool = False,
+        network_forward_rules: Optional[Tuple[XQEMUNetworkForwardRule, ...]] = None,
     ):
         """:param force_headless: only use this if you are doing something fancy!"""
         self._hdd_filename = hdd_filename
