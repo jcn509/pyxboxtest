@@ -8,11 +8,11 @@ from typing import NamedTuple, Optional, Sequence, Tuple
 
 from qmp import QEMUMonitorProtocol
 
-from ._xqemu_temporary_directories import get_temp_dirs
 from .._utils import retry_every, UnusedPort
 
 # Because pyxboxtest.xqemu imports XQEMUXboxAppRunner pytest falls over...
 # pytype: disable=pyi-error
+from ._xqemu_temporary_directories import get_temp_dirs
 from . import (
     XQEMUFTPClient,
     XQEMUKDCapturer,
@@ -25,7 +25,7 @@ from . import (
 
 
 class _XQEMUXboxAppRunnerGlobalParams(NamedTuple):
-    """For internal use only!"""
+    """For internal use only! Should only be set by the pytest plugin"""
 
     mcpx_rom_filename: str
     xbox_bios_filename: str
@@ -39,6 +39,7 @@ class XQEMUXboxAppRunner(AbstractContextManager):
     and sending controller input to XQEMU
     """
 
+    """For internal use only! Should only be set by the pytest plugin"""
     _global_params: Optional[_XQEMUXboxAppRunnerGlobalParams] = None
 
     def __init__(
