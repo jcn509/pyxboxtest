@@ -2,14 +2,21 @@
 import pytest
 
 from .xqemu._xqemu_temporary_directories import _initialise_temp_dirs
-from .xqemu.xqemu_xbox_app_runner import _set_headless
+from .xqemu.xqemu_xbox_app_runner import (
+    XQEMUXboxAppRunner,
+    _XQEMUXboxAppRunnerGlobalParams,
+)
 
 
 @pytest.fixture(scope="session", autouse=True)
 def _initial_framework_setup(request, tmp_path_factory):
     """Never use this fixture directly!"""
     _initialise_temp_dirs(tmp_path_factory)
-    _set_headless(request.config.getoption("--headless"))
+    XQEMUXboxAppRunner._global_params = _XQEMUXboxAppRunnerGlobalParams(
+        request.config.getoption("--mcpx-rom"),
+        request.config.getoption("--bios"),
+        request.config.getoption("--headless"),
+    )
 
 
 def pytest_addoption(parser):
@@ -20,3 +27,7 @@ def pytest_addoption(parser):
         default=False,
         help="Run without creating windows for each instance of XQEMU",
     )
+    parser.addoption(
+        "--mcpx-rom", type=str, help="MCPX rom used to boot the xbox", required=True
+    )
+    parser.addoption("--bios", type=str, help="Xbox BIOS (kernel) image", required=True)

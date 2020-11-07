@@ -19,8 +19,8 @@ def get_temp_dirs() -> _TemporaryDirectories:
     """
     if get_temp_dirs._temporary_directories is None:
         raise RuntimeError(
-            "Tried to get temp dirs before the base directory was set!"
-            "Are you doing something globally that should be done in a fixture?"
+            "Tried to get temp dirs before the base directory was set! "
+            + "Are you doing something globally that should be done in a fixture?"
         )
     return get_temp_dirs._temporary_directories
 

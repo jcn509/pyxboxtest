@@ -4,7 +4,7 @@ from contextlib import AbstractContextManager
 from ftplib import FTP
 import os
 import subprocess
-from typing import Optional, Sequence, Tuple
+from typing import NamedTuple, Optional, Sequence, Tuple
 
 from qmp import QEMUMonitorProtocol
 
@@ -23,13 +23,13 @@ from . import (
 
 # pytype: enable=pyi-error
 
-_HEADLESS = False
 
-
-def _set_headless(headless: bool) -> None:
+class _XQEMUXboxAppRunnerGlobalParams(NamedTuple):
     """For internal use only!"""
-    global _HEADLESS
-    _HEADLESS = headless
+
+    mcpx_rom_filename: str
+    xbox_bios_filename: str
+    headless: bool
 
 
 class XQEMUXboxAppRunner(AbstractContextManager):
@@ -38,6 +38,8 @@ class XQEMUXboxAppRunner(AbstractContextManager):
     Provides facilities network forwarding, screenshots, kernel debug capture
     and sending controller input to XQEMU
     """
+
+    _global_params: Optional[_XQEMUXboxAppRunnerGlobalParams] = None
 
     def __init__(
         self,
@@ -50,16 +52,21 @@ class XQEMUXboxAppRunner(AbstractContextManager):
         """:param force_headless: only use this if you are doing something
         fancy like using a "hidden" Xbox app to do some test setup!
         """
+        if XQEMUXboxAppRunner._global_params is None:
+            raise RuntimeError(
+                "Trying to instantiate before the bios and mcpx rom are set!"
+                + " Are you doing something globally that should be in a fixture?"
+            )
+
         self._qemu_monitor_instance = None
         self._kd_capturer_instance = None
-        headless = force_headless or _HEADLESS
+        headless = force_headless or XQEMUXboxAppRunner._global_params.headless
 
         # need some way of ensuring that only one process at a time can do this
         # so as to avoid having multiple processes using the same ports
         # with parallel test execution
-        mcpx_rom = "/home/josh/.xqemu_files/mcpx_1.0.bin"
-        xqemu_binary = "xqemu"
-        xbox_bios = "/home/josh/.xqemu_files/Complex_4627.bin"
+        mcpx_rom = XQEMUXboxAppRunner._global_params.mcpx_rom_filename
+        xbox_bios = XQEMUXboxAppRunner._global_params.xbox_bios_filename
 
         # To allow parallel test execution different instances must be using different ports
         self._ftp_forward_port = UnusedPort()
@@ -67,7 +74,7 @@ class XQEMUXboxAppRunner(AbstractContextManager):
         self._qemu_monitor_forward_port = UnusedPort()
 
         self._xqemu_args = (
-            xqemu_binary,
+            "xqemu",
             "-cpu",
             "pentium3",
             "-machine",
