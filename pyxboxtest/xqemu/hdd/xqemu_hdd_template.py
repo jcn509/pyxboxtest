@@ -9,6 +9,7 @@ from typing import Tuple
 
 import pytest
 
+from .._xqemu_temporary_directories import get_temp_dirs
 from .xqemu_hdd_modifications import HDDModification
 from ._xqemu_hdd_template_modifier import _XQEMUHDDTemplateModifier
 
@@ -18,18 +19,6 @@ from ._xqemu_hdd_template_modifier import _XQEMUHDDTemplateModifier
 
 
 _LOGGER = logging.getLogger(__name__)
-
-_HDD_STORAGE_DIR = ""
-_HDD_TEMPLATE_STORAGE_DIR = ""
-
-
-def _set_temp_dir(tmp_path_factory) -> None:
-    """Never call this function directly! It is to be used by the pytest plugin only!"""
-    global _HDD_STORAGE_DIR, _HDD_TEMPLATE_STORAGE_DIR
-    _HDD_STORAGE_DIR = tmp_path_factory.mktemp("xqemu_hdd_images", numbered=False)
-    _HDD_TEMPLATE_STORAGE_DIR = tmp_path_factory.mktemp(
-        "xqemu_hdd_template_images", numbered=False
-    )
 
 
 def _copy_hdd_image(original_image_filename: str, new_copy_filename: str) -> None:
@@ -66,7 +55,7 @@ class XQEMUHDDTemplate:
     ):
         _LOGGER.debug("Creating template for %s", template_name)
         self._template_file_path = os.path.join(
-            _HDD_TEMPLATE_STORAGE_DIR, template_name + ".qcow2",
+            get_temp_dirs().hdd_templates_dir, template_name + ".qcow2",
         )
         if os.path.isfile(self._template_file_path):
             raise ValueError(
@@ -86,12 +75,12 @@ class XQEMUHDDTemplate:
     def _generate_fresh_hdd_file_path(self) -> str:
         """:returns: a unique filename for a new HDD image based on this template"""
         fresh_hdd_name = os.path.join(
-            _HDD_STORAGE_DIR,
+            get_temp_dirs().hdd_images_dir,
             str(self._hdd_image_count)
             + "-"
             + os.path.basename(self._template_file_path),
         )
-        return os.path.join(_HDD_STORAGE_DIR, fresh_hdd_name)
+        return os.path.join(get_temp_dirs().hdd_images_dir, fresh_hdd_name)
 
     def create_fresh_hdd(self) -> str:
         """Create a copy of the HDD template for use with an instance of XQEMU

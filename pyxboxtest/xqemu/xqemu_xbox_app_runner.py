@@ -85,7 +85,7 @@ class XQEMUXboxAppRunner(AbstractContextManager):
             "-net",
             f"user,hostfwd=tcp:127.0.0.1:{self._ftp_forward_port.port_number}-:21",
             "-serial",
-            f"tcp::{self._kd_forward_port.port_number.port_number},server,nowait",
+            f"tcp::{self._kd_forward_port.port_number},server,nowait",
             "-qmp",
             f"tcp::{self._qemu_monitor_forward_port.port_number},server,nowait",
         )
@@ -124,7 +124,7 @@ class XQEMUXboxAppRunner(AbstractContextManager):
 
     def save_screenshot_non_temp(self, filename: str) -> None:
         """Save a screenshot in ppm format in some place
-        
+
         You should probably use save_screenshot, only use this method if you
         want to keep the screenshots after the test e.g. if you are using this
         lib to keep screenshots up to date for each release at the same time

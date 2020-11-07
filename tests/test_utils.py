@@ -1,6 +1,5 @@
 """Test the various utilities in :py:mod:`pyxboxtest._utils`"""
 import time
-from typing import Tuple
 
 from mock import Mock
 import pytest

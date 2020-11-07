@@ -17,7 +17,7 @@ def _validate_ip_address(ip_address: Optional[str]) -> None:
 
 def _validate_port(port: int) -> None:
     """:raises ValueError: port number is outside the allowed range"""
-    if not (0 <= port <= 65535):
+    if not 0 <= port <= 65535:
         raise ValueError("Port number must be in range [0, 65535]")
 
 
@@ -35,6 +35,10 @@ class XQEMURAMSize(Enum):
 
     RAM64m = "64M"
     RAM128 = "128M"
+
+
+def _ip_str(ip_address: Optional[str]) -> str:
+    return "" if ip_address is None else ip_address
 
 
 @dataclass(frozen=True)
@@ -57,15 +61,12 @@ class XQEMUNetworkForwardRule:
         _validate_port(self.xbox_port)
         _validate_port(self.forward_to_port)
 
-    def _ip_str(self, ip_address: Optional[str]) -> str:
-        return "" if ip_address is None else ip_address
-
     def get_rule_str(self) -> str:
         """:returns: a string that can be given to XQEMU to do the network
         forwarding
         """
         return (
             f"user,hostfwd={self.transport_protocol.value}:"
-            f"{self._ip_str(self.forward_to_ip)}:{self.forward_to_port}-"
-            f"{self._ip_str(self.xbox_ip)}:{self.xbox_port}"
+            f"{_ip_str(self.forward_to_ip)}:{self.forward_to_port}-"
+            f"{_ip_str(self.xbox_ip)}:{self.xbox_port}"
         )

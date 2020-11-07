@@ -5,6 +5,7 @@ from typing import Tuple
 
 import pytest
 
+from pyxboxtest.xqemu._xqemu_temporary_directories import get_temp_dirs
 from pyxboxtest.xqemu.hdd import (
     XQEMUHDDTemplate,
     AddFile,
@@ -83,11 +84,7 @@ def _get_qemu_img_cow_copy_command(
 
 def _get_hdd_template_path(template_name: str) -> str:
     """Get the full file path to a HDD template file"""
-    # Have to delay this import until now, as when this script is first read
-    # it won't yet have a value
-    from pyxboxtest.xqemu.hdd.xqemu_hdd_template import _HDD_TEMPLATE_STORAGE_DIR
-
-    return os.path.join(_HDD_TEMPLATE_STORAGE_DIR, template_name + ".qcow2")
+    return os.path.join(get_temp_dirs().hdd_templates_dir, template_name + ".qcow2")
 
 
 def _get_hdd_image_path(template_name: str, hdd_number: int) -> str:
@@ -95,13 +92,15 @@ def _get_hdd_image_path(template_name: str, hdd_number: int) -> str:
     :param hdd_number: 1 for the first image created from the template, \
         2 for the second etc.
     """
-    # Have to delay this import until now, as when this script is first read
-    # it won't yet have a value
-    from pyxboxtest.xqemu.hdd.xqemu_hdd_template import _HDD_STORAGE_DIR
-
     return os.path.join(
-        _HDD_STORAGE_DIR, str(hdd_number) + "-" + template_name + ".qcow2",
+        get_temp_dirs().hdd_images_dir,
+        str(hdd_number) + "-" + template_name + ".qcow2",
     )
+
+
+def test_image_and_template_dirs_are_different():
+    """Sanity check to make sure that the image and template directories are different"""
+    assert get_temp_dirs().hdd_images_dir != get_temp_dirs().hdd_templates_dir
 
 
 @pytest.mark.usefixtures("mocked_subprocess_popen")
