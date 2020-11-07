@@ -1,10 +1,11 @@
 """Test the various utilities in :py:mod:`pyxboxtest._utils`"""
 import time
+from typing import Tuple
 
 from mock import Mock
 import pytest
 
-from pyxboxtest._utils import get_unused_ports, retry_every
+from pyxboxtest._utils import retry_every, UnusedPort
 
 
 # Grouped into classes as a way to organise the tests
@@ -97,25 +98,31 @@ class TestRetryEvery:
         ), "callback called until it does not throw an exception"
 
 
-@pytest.mark.parametrize("number_of_ports", tuple(range(1, 4)))
-class TestGetUnusedPorts:
-    """tests for :py:func:`~pyxboxtest.utils.get_unused_ports`
+@pytest.mark.parametrize(
+    "unused_ports",
+    tuple(
+        (
+            UnusedPort() for _ in range(number_of_ports)
+        )  # Generator not tuple so that once a test is done those ports can be freed
+        for number_of_ports in range(1, 4000, 100)
+    ),
+)
+class TestUnusedPorts:
+    """tests for :py:class:`~pyxboxtest.utils.UnusedPorts`
     There is no mocking here to be sure that it actually works.
     """
 
-    def test_num_ports(self, number_of_ports: int):
-        """Ensures that the correct number of ports are returned"""
-        ports = tuple(get_unused_ports(number_of_ports))
-        assert len(ports) == number_of_ports, "correct number of ports"
-
-    def test_ports_unique(self, number_of_ports: int):
+    def test_ports_unique(self, unused_ports):
         """Ensures that no two ports that are returned are the same"""
-        ports = tuple(get_unused_ports(number_of_ports))
-        assert _all_unique(ports), "All the ports are unique"
+        # For this test to work they must exist at the same time
+        unused_ports = tuple(unused_ports)
 
-    def test_ports_are_ints(self, number_of_ports: int):
-        """Ensure that all the ports are integers"""
-        ports = tuple(get_unused_ports(number_of_ports))
+        assert _all_unique(
+            tuple(port.port_number for port in unused_ports)
+        ), "All the ports are unique"
+
+    def test_ports_are_ints(self, unused_ports):
+        """Ensure that all the port numbers are integers"""
         assert all(
-            isinstance(port, int) for port in ports
+            isinstance(port.port_number, int) for port in unused_ports
         ), "All the ports are integers"

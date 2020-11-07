@@ -9,7 +9,14 @@ setup(
     author="Josh Neil",
     author_email="joshneil8@gmail.com",
     # url='https://www.python.org/sigs/distutils-sig/',
-    install_requires=["overrides", "pytest", "qmp", "install"],
+    install_requires=[
+        "overrides",
+        "pytest",
+        "qmp",
+        "install",
+        "psutil",
+        "cached-property",
+    ],
     packages=["pyxboxtest"],
     dependency_links=[],
 )

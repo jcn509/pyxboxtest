@@ -21,6 +21,10 @@ class HDDModification(ABC):
         raise NotImplementedError
 
 
+# Directory operations?
+# Need to be able to create a directory. Maybe copy a directory as well?
+
+
 @dataclass(frozen=True)
 class AddFile(HDDModification):
     """Add a file to a HDD template"""
