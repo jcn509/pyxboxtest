@@ -24,7 +24,7 @@ Until I clean up this readme and write some proper docs, you can see some sample
 - Automated controller input (uses Qemu's monitor rather than faking keyboard events so you can use your computer for other tasks without it interfering)
 - Screenshots (using Qemu's monitor so that they are unaffected by Window size or headless mode)
 - Headless mode so that you can run tests in the background without windows popping up
-- Network connections e.g. FTP
+- Network connections e.g. FTP can be forwarded
 - Setup HDD image templates from which you can create clean images to be used for your tests
   - Prevents changes to a HDD from affecting other tests in the current run (and future runs too)
   - You can use an existing HDD image to form the basis of the template
@@ -35,7 +35,6 @@ Until I clean up this readme and write some proper docs, you can see some sample
   - pyxboxtest ships with a built in completely blank image from which you can create new templates
 
 # TODO
-## Definitely
 - Refactor the FTP connection code. Instead accept a list of ports (and IPs??) that should be forwarded to *some other port* then we capture any network traffic we want. Will need to provide an example of this for FTP.
 - Support for HDD read/write (outside of Xbox apps)
   - Implementation uses an Xbox app running an FTP server (there is an easy to use wrapper around this)
@@ -46,21 +45,23 @@ Until I clean up this readme and write some proper docs, you can see some sample
     - May not be an issue as I believe pytest will automatically put them in new folders?
 - Get the package listed on PyPi
 
-## If time allows
+# Possible extensions/useful tools
 - Pause/continue execution using QEMU's monitor
 - Investigate https://github.com/mborgerson/xqemu-kernel. I couldn't get it to work :/ but if it could be used it would provide a way to run tests legally on some CI platform (currently tricky due to legal issues with the kernel)
 - Support for [Cxbx-Reloaded](https://github.com/Cxbx-Reloaded/Cxbx-Reloaded) (tests should work regardless of which emulator is used, without much modification)
   - Currently [NXDK support does not seem to be very good](https://github.com/Cxbx-Reloaded/Cxbx-Reloaded/issues/1562), so this may not be worth the effort
   - Cxbx-Reloaded support would be nice as with Cxbx-Reloaded (unlike with XQEMU) you do not need a copy of the BiOS or MCPX rom, and that would make it far easier to use and would mean you could run tests on CI platforms legally.
     - This may become irrelevant with projects like a [homebrew Xbox kernel based on react OS](https://reactos.org/wiki/Run_Xbox_Games_on_ReactOS) or something like [xqemu-kernel](https://github.com/mborgerson/xqemu-kernel)
-  - May not be possible to support:
-    - headless mode
-    - sending fake inputs to the app without generating fake keyboard input that would potentially interfere with other applications
-    - screenshots that are not affected by the size of the window
-      - May not be an issue if window size is the same as the Xbox's resolution by default
+    - May not be possible to support:
+      - headless mode
+      - sending fake inputs to the app without generating fake keyboard input that would potentially interfere with other applications
+      - screenshots that are not affected by the size of the window
+        - May not be an issue if window size is the same as the Xbox's resolution by default
 - Investigate support for qemu monitor based debugging
   - [xboxpy](https://github.com/XboxDev/xboxpy) will work __today__ so long as it works with XQEMU. We may be able to do some additional debugging using XQEMU's monitor without the overhead of debug libraries or XBDM.dll
+- See what can be done with [pyrebox](https://pyrebox.readthedocs.io/en/latest)
+- See what can be done with [libvirt](https://libvirt.org)
 - Investigate support for running tests on real hardware. Should be possible using (some legal alternative to) XBDM.dll to control the xbox, but there are some challenges to overcome such as faking controller input and loading HDD setup quickly.
 
-## Development
+# Development
 Pipenv is used to manage the dev environment, whilst setup.py is used to allow installing the library from pip. Please only add packages to the Pipfile and then sync them to the setup.py using `pipenv-setup sync --pipfile`, there is a CI check to make sure that they stay in sync. In the future this process may be automated instead. Please make sure that you install dependencies that are only needed to test the pyxboxtest library as dev dependencies.
