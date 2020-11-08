@@ -16,8 +16,6 @@ pipenv-setup = "*"
 overrides = "*"
 pytest = "*"
 qmp = "*"
-install = "*"
-psutil = "*"
 cached-property = "*"
 
 [requires]
