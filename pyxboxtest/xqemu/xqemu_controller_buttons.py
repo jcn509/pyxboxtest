@@ -17,7 +17,7 @@ class XQEMUXboxControllerButtons(Enum):
     BLACK = "c"
 
     # Start and back
-    START = "kp_enter"
+    START = "ret"
     BACK = "backspace"
 
     # DPAD
