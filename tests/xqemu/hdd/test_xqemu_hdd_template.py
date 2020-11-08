@@ -1,4 +1,4 @@
-"""Tests for :py:class:`~pyxboxtest.xqemu.xqemu_hdd_cloner`"""
+"""Tests for :py:class:`~pyxboxtest.xqemu.hdd.XQEMUHDDTemplate`"""
 import os
 import subprocess
 from typing import Tuple
@@ -26,12 +26,6 @@ from pyxboxtest.xqemu.hdd import (
 _TEST_BLANK_HDD_IMAGE = os.path.join(
     os.path.dirname(__file__), "blank hdd image for tests.qcow2"
 )
-
-
-@pytest.fixture
-def mocked_subprocess_popen(mocker):
-    """We don't really want to spawn new processes"""
-    mocker.patch("subprocess.Popen")
 
 
 @pytest.fixture(autouse=True)
@@ -96,11 +90,6 @@ def _get_hdd_image_path(template_name: str, hdd_number: int) -> str:
         get_temp_dirs().hdd_images_dir,
         str(hdd_number) + "-" + template_name + ".qcow2",
     )
-
-
-def test_image_and_template_dirs_are_different():
-    """Sanity check to make sure that the image and template directories are different"""
-    assert get_temp_dirs().hdd_images_dir != get_temp_dirs().hdd_templates_dir
 
 
 @pytest.mark.usefixtures("mocked_subprocess_popen")
