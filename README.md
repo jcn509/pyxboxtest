@@ -46,6 +46,10 @@ Until I clean up this readme and write some proper docs, you can see some sample
   - Need to ensure that new HDD file names are selected atomically
     - May not be an issue as I believe pytest will automatically put them in new folders?
 - Get the package listed on PyPi
+- Add a "stock" built in HDD image that has TDATA/UDATA/whatever else a game/app might expect that isn't copyrighted
+- Logging
+- Ability to throw away all unread KD data (makes it easier to get the latest lines)
+  -  Need to update controller sample test once this is done
 
 # Possible extensions/useful tools
 - Pause/continue execution using QEMU's monitor
@@ -64,6 +68,11 @@ Until I clean up this readme and write some proper docs, you can see some sample
 - See what can be done with [pyrebox](https://pyrebox.readthedocs.io/en/latest)
 - See what can be done with [libvirt](https://libvirt.org)
 - Investigate support for running tests on real hardware. Should be possible using (some legal alternative to) XBDM.dll to control the xbox, but there are some challenges to overcome such as faking controller input and loading HDD setup quickly.
+- Image comparrison:
+  - https://github.com/Apkawa/pytest-image-diff/
+  - https://github.com/olymk2/pytest-inomaly
+- Text extraction from screenshots:
+  - https://pypi.org/project/pytesseract/
 
 # Development
 Pipenv is used to manage the dev environment, whilst setup.py is used to allow installing the library from pip. Please only add packages to the Pipfile and then sync them to the setup.py using `pipenv-setup sync --pipfile`, there is a CI check to make sure that they stay in sync. In the future this process may be automated instead. Please make sure that you install dependencies that are only needed to test the pyxboxtest library as dev dependencies.
