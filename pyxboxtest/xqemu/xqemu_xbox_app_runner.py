@@ -5,6 +5,7 @@ from ftplib import FTP
 import os
 import subprocess
 from typing import NamedTuple, Optional, Sequence, Tuple
+import uuid
 
 from qmp import QEMUMonitorProtocol
 
@@ -84,8 +85,10 @@ class XQEMUXboxAppRunner(AbstractContextManager):
             ram_size.value,
             "-bios",
             xbox_bios,
+            "-device",  # Is this the right controller connection code?
+            "usb-hub,port=3",
             "-device",
-            "usb-xbox-gamepad",
+            "usb-xbox-gamepad,port=3.1",
             "-device",
             "lpc47m157",
             "-net",
@@ -123,7 +126,6 @@ class XQEMUXboxAppRunner(AbstractContextManager):
         hold_time: Optional[int] = None,
     ) -> None:
         """Press buttons on the virtual xbox controller"""
-        # Need to figure out how to set hold time :s
         args = {"keys": [{"type": "qcode", "data": key.value} for key in buttons]}
         if hold_time is not None:
             args["hold-time"] = hold_time
@@ -138,13 +140,20 @@ class XQEMUXboxAppRunner(AbstractContextManager):
         lib to keep screenshots up to date for each release at the same time
         as testing.
         """
+        _, file_extension = os.path.splitext(filename)
+        if file_extension.lower() != ".ppm":
+            raise ValueError("File extension must be ppm!")
+
         self._get_qemu_monitor().command("screendump", filename=filename)
 
-    def save_screenshot(self, filename: str) -> str:
+    def save_screenshot(self, filename: Optional[str] = None) -> str:
         """Save a screenshot in ppm format
         The screenshot is saved in the temporary dir for this test
+        :param filename: if not given a unique filename will be generated
         :returns: the path to the screenshot
         """
+        if filename is None:
+            filename = uuid.uuid4().hex + ".ppm"
         screenshot_path = os.path.join(get_temp_dirs().screenshots_dir, filename)
         self.save_screenshot_non_temp(screenshot_path)
         return screenshot_path
