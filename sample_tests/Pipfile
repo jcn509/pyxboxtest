@@ -6,6 +6,8 @@ name = "pypi"
 [packages]
 pyxboxtest = {editable = true, path = "./.."}
 dpath = "*"
+pytesseract = "*"
+pillow = "*"
 
 [dev-packages]
 
