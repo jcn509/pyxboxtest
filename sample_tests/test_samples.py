@@ -12,6 +12,8 @@ from pyxboxtest.xqemu import (
 from pyxboxtest.xqemu.hdd import XQEMUHDDTemplate
 
 import dpath.util
+from PIL import Image
+import pytesseract
 import pytest
 
 
@@ -153,6 +155,19 @@ def get_buttons_dict(
         dpath.util.set(buttons_dict, path, value)
 
     return buttons_dict
+
+
+def test_hello_world(xqemu_blank_hdd_template):
+    with XQEMUXboxAppRunner(
+        hdd_filename=xqemu_blank_hdd_template.create_fresh_hdd(),
+        dvd_filename="/home/josh/projects/nxdk/samples/hello/hello.iso",
+    ) as app:
+        sleep(5)  # Ensure that the has had enough time to render fully
+        # There may be multiple lines by the time we read the image!
+        first_line = pytesseract.image_to_string(
+            Image.open(app.save_screenshot())
+        ).split("\n")[0]
+        assert first_line == "Hello nxdk!"
 
 
 @pytest.mark.parametrize(
