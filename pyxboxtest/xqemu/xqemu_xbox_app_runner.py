@@ -3,7 +3,6 @@
 from contextlib import AbstractContextManager
 from ftplib import FTP
 import os
-from pyxboxtest.xqemu import xqemu_kd_capturer
 import subprocess
 from typing import NamedTuple, Optional, Sequence, Tuple
 import uuid
