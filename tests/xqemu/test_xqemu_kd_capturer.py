@@ -2,6 +2,7 @@
 from contextlib import contextmanager
 from multiprocessing import Process
 import socket
+from time import sleep
 from typing import Iterator, Tuple
 
 import pytest
@@ -28,37 +29,47 @@ def test_correct_socket(port: int):
 
 
 def run_kd_server(kd_strs: Tuple[str], port: int) -> None:
-    """Emulate the socket that xqemu creates for forwarding KD output"""
+    """Emulate the socket that xqemu creates for forwarding KD output
 
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # create socket
-    s.bind(("", port))
-    s.listen(1)  # listening for only one client
+    :param kd_strs: the strings that app running in xqemu would send over \
+        the serial port
+    """
 
-    conn, _ = s.accept()  # accept the connection
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # create socket
+    sock.bind(("", port))
+    sock.listen(1)  # listening for only one client
+
+    conn, _ = sock.accept()  # accept the connection
 
     for kd_str in kd_strs:
         conn.send(kd_str.encode())
 
 
 @contextmanager
-def kd_server(kd_strs: Tuple[str], port: int):
+def kd_server(kd_strs: Tuple[str], port: int) -> Iterator[Process]:
     """Context manager for a server that sends out the kd_strs in a background
     process. Used to emulate the socket that xqemu creates for forwarding KD
-    output
+    output.
+
+    :param kd_strs: the strings that app running in xqemu would send over \
+        the serial port
     """
-    kd_server = Process(target=run_kd_server, args=(kd_strs, port))
-    kd_server.start()
+    server = Process(target=run_kd_server, args=(kd_strs, port))
+    server.start()
     try:
-        yield kd_server
+        yield server
     finally:
-        kd_server.join()
+        server.join()
 
 
 @contextmanager
 def kd_capturer_for_strs(kd_strs: Tuple[str]) -> Iterator[XQEMUKDCapturer]:
-    """Context manager for a kd capturer tied to a background server that
+    """Context manager for an XQEMUKDCapturer tied to a background server that
     sends out the kd_strs in a background process. Used to emulate the
-    socket that xqemu creates for forwarding KD output
+    socket that xqemu creates for forwarding KD output.
+
+    :param kd_strs: the strings that app running in xqemu would send over \
+        the serial port
     """
     port_number = UnusedPort().port_number
     with kd_server(kd_strs, port_number):
@@ -110,7 +121,7 @@ def test_get_line_partial_lines_send_from_xqemu(chunks_to_send: Tuple[str]):
 
 @pytest.mark.parametrize(
     "data_to_send, num_chars_to_receive",
-    (("test", 3), ("test", 20)),
+    (("test", 3), ("test", 20), ("test\n\n\asdadasd", 1000), ("test\n\n\asdadasd", 1)),
 )
 def test_get_num_chars(data_to_send: str, num_chars_to_receive: int):
     """Ensure that we can correctly retrieve at most a certain number of chars"""
@@ -122,3 +133,35 @@ def test_get_num_chars(data_to_send: str, num_chars_to_receive: int):
             len(data_to_send), num_chars_to_receive
         ), "Correct number of characters were captured"
         assert data_to_send.startswith(captured_data)
+
+
+@pytest.mark.parametrize(
+    "data_to_send,",
+    (
+        "test",
+        "test\n\n\asdadasd",
+        "".join("a" for _ in range(10000)),
+    ),
+)
+def test_get_all_data_available(data_to_send: str):
+    """Ensure that we can correctly retrieve all data that is currently
+    available - assuming that there is some
+    """
+    with kd_capturer_for_strs((data_to_send,)) as xqemu_kd_capturer:
+        # Sleep so that we know the data has been sent before we check
+        # as this call does not block
+        sleep(1)
+        assert (
+            xqemu_kd_capturer.get_all() == data_to_send
+        ), "we captured all the sent data"
+
+
+def test_get_all_no_data_available():
+    """Ensure that we get an empty string if there is no data available from
+    the server and we don't block
+    """
+    with kd_capturer_for_strs(tuple()) as xqemu_kd_capturer:
+        sleep(1)
+        assert (
+            xqemu_kd_capturer.get_all() == ""
+        ), "we did not block and captured something"
