@@ -34,7 +34,7 @@ class XQEMURAMSize(Enum):
     """How much RAM is available to the Xbox"""
 
     RAM64m = "64M"
-    RAM128 = "128M"
+    RAM128m = "128M"
 
 
 def _ip_str(ip_address: Optional[str]) -> str:

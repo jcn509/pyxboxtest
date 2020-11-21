@@ -3,6 +3,7 @@
 from contextlib import AbstractContextManager
 from ftplib import FTP
 import os
+from pyxboxtest.xqemu import xqemu_kd_capturer
 import subprocess
 from typing import NamedTuple, Optional, Sequence, Tuple
 import uuid
@@ -108,6 +109,8 @@ class XQEMUXboxAppRunner(AbstractContextManager):
         if dvd_filename is not None:
             self._xqemu_args += ("-drive", f"index=1,media=cdrom,file={dvd_filename}")
 
+        print("xqemu parameters: ", self._xqemu_args)
+
         self._app = None
 
     def get_ftp_client(
@@ -117,7 +120,6 @@ class XQEMUXboxAppRunner(AbstractContextManager):
         ftp_client = XQEMUFTPClient(self._ftp_forward_port.port_number)
         if username is not None and password is not None:
             ftp_client.login(username, password)
-        ftp_client.dir()
         return ftp_client
 
     def press_controller_buttons(
@@ -131,6 +133,15 @@ class XQEMUXboxAppRunner(AbstractContextManager):
             args["hold-time"] = hold_time
         print(args)
         self._get_qemu_monitor().command("send-key", **args)
+
+    def reset_xbox(self) -> None:
+        """Reset the Xbox
+
+        It will then load whatever software the kernel is configured to load
+        on reset. It will probably reload whatever software started
+        running when you first started running this instance.
+        """
+        print(self._get_qemu_monitor().command("system_reset"))
 
     def save_screenshot_non_temp(self, filename: str) -> None:
         """Save a screenshot in ppm format in some place
@@ -181,8 +192,10 @@ class XQEMUXboxAppRunner(AbstractContextManager):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        if self._qemu_monitor_instance is not None:
-            self._qemu_monitor_instance.close()
         if self._kd_capturer_instance is not None:
             self._kd_capturer_instance.close()
-        self._app.kill()
+        if self._qemu_monitor_instance is not None:
+            self._qemu_monitor_instance.close()
+        self._app.terminate()
+        # Wait so that we can be sure that we can use the HDD image elsewhere
+        self._app.wait()

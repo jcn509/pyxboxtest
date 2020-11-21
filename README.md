@@ -48,8 +48,12 @@ Until I clean up this readme and write some proper docs, you can see some sample
 - Get the package listed on PyPi
 - Add a "stock" built in HDD image that has TDATA/UDATA/whatever else a game/app might expect that isn't copyrighted
 - Logging
+  - including redirecting xqemu standard out/error!
 - Ability to throw away all unread KD data (makes it easier to get the latest lines)
   -  Need to update controller sample test once this is done
+- Custom binary path to allow people to try and use xemu. Need to note that xemu may not work.
+- Investigate using a unit testing framework that runs "on the Xbox itself" (i.e. inside xqemu).
+  - Using that along with this library we could run Xbox specific unit tests, this could be really useful for testing the NXDK or xqemu!
 
 # Possible extensions/useful tools
 - Pause/continue execution using QEMU's monitor

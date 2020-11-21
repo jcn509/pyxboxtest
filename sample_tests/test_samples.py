@@ -35,6 +35,10 @@ def test_nevolutionx_ftp(nevolutionx_ftp_client: FTP):
     nevolutionx_ftp_client.dir()
 
 
+def test_nevolutionx_reset(nevolutionx_app: XQEMUXboxAppRunner):
+    nevolutionx_app.reset_xbox()
+
+
 def test_kernel_debug(xqemu_blank_hdd_template):
     with XQEMUXboxAppRunner(
         hdd_filename=xqemu_blank_hdd_template.create_fresh_hdd(),
