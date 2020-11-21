@@ -61,7 +61,7 @@ class UnusedPort:
         UnusedPort._reserved_ports.remove(self._port_number)
 
     @cached_property  # Don't want to close the socket more than once!
-    def port_number(self):
+    def port_number(self) -> int:
         """The number of the port"""
         # Release control of the port so that it can be used
         self._sock.close()
