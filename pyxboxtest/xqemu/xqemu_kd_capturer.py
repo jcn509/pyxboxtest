@@ -1,5 +1,4 @@
 """Captures kernel debug (serial port) output from XQEMU"""
-
 import socket
 
 from .._utils import retry_every
@@ -17,11 +16,21 @@ class XQEMUKDCapturer:
         """Stop listening for serial port output"""
         self._client.close()
 
-    def _get_num_chars(self, num_chars: int, encoding: str) -> str:
+    def _get_num_chars(
+        self, num_chars: int, encoding: str, blocking: bool = True
+    ) -> str:
         """Used internally to get a number of characters
         :returns: at most num_chars characters
         """
-        return self._client.recv(num_chars).decode(encoding)
+        if blocking:
+            data = self._client.recv(num_chars)
+        else:
+            try:
+                data = self._client.recv(num_chars, socket.MSG_DONTWAIT)
+            except BlockingIOError:
+                return ""
+
+        return data.decode(encoding)
 
     def get_num_chars(self, num_chars: int, encoding: str = "ascii") -> str:
         """Blocks until output is available
@@ -35,16 +44,15 @@ class XQEMUKDCapturer:
         """Non-blocking
         :returns: all currently available data
         """
-        self._client.setblocking(False)
-        data = self._get_num_chars(4096, encoding)
+        chunk_size = 4096
         ret = ""
+        data = self._get_num_chars(chunk_size, encoding, False)
+
         while data:
             ret += data
-            data = self._get_num_chars(4096, encoding)
-        self._client.setblocking(True)
+            data = self._get_num_chars(chunk_size, encoding, False)
 
         print(ret)
-
         return ret
 
     def get_line(self, delim_char="\n", encoding: str = "ascii") -> str:
@@ -59,5 +67,6 @@ class XQEMUKDCapturer:
         while char != delim_char:
             char = self._get_num_chars(chunk_size, encoding)
             line += char
+
         print(line)
         return line

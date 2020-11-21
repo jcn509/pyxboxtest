@@ -97,7 +97,7 @@ class XQEMUXboxAppRunner(AbstractContextManager):
             "-net",
             f"user,hostfwd=tcp:127.0.0.1:{self._ftp_forward_port.port_number}-:21",
             "-serial",
-            f"tcp::{self._kd_forward_port.port_number},server,nowait",
+            f"tcp::{self._kd_forward_port.port_number},server",
             "-qmp",
             f"tcp::{self._qemu_monitor_forward_port.port_number},server,nowait",
         )
@@ -171,10 +171,6 @@ class XQEMUXboxAppRunner(AbstractContextManager):
 
     def get_kd_capturer(self) -> XQEMUKDCapturer:
         """Can be used to retrieve text from the serial port"""
-        if self._kd_capturer_instance is None:
-            self._kd_capturer_instance = XQEMUKDCapturer(
-                self._kd_forward_port.port_number
-            )
         return self._kd_capturer_instance
 
     def _get_qemu_monitor(self) -> QEMUMonitorProtocol:
@@ -189,11 +185,14 @@ class XQEMUXboxAppRunner(AbstractContextManager):
 
     def __enter__(self):
         self._app = subprocess.Popen(self._xqemu_args)
+        self._kd_capturer_instance = XQEMUKDCapturer(self._kd_forward_port.port_number)
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        if self._kd_capturer_instance is not None:
-            self._kd_capturer_instance.close()
+        print("Uncaptured KD output:")
+        self._kd_capturer_instance.get_all()  # Will log it
+
+        self._kd_capturer_instance.close()
         if self._qemu_monitor_instance is not None:
             self._qemu_monitor_instance.close()
         self._app.terminate()
