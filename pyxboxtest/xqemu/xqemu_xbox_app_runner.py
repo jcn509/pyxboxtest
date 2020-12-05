@@ -135,7 +135,7 @@ class XQEMUXboxAppRunner(AbstractContextManager):
         if hold_time is not None:
             args["hold-time"] = hold_time
         print(args)
-        self._get_qemu_monitor().command("send-key", **args)
+        self.get_qemu_monitor().command("send-key", **args)
 
     def reset_xbox(self) -> None:
         """Reset the Xbox
@@ -144,7 +144,7 @@ class XQEMUXboxAppRunner(AbstractContextManager):
         on reset. It will probably reload whatever software started
         running when you first started running this instance.
         """
-        print(self._get_qemu_monitor().command("system_reset"))
+        print(self.get_qemu_monitor().command("system_reset"))
 
     def save_screenshot(self, filename: Optional[str] = None) -> str:
         """Save a screenshot in ppm format
@@ -161,14 +161,14 @@ class XQEMUXboxAppRunner(AbstractContextManager):
             raise ValueError("File extension must be ppm!")
 
         screenshot_path = os.path.join(get_temp_dirs().screenshots_dir, filename)
-        self._get_qemu_monitor().command("screendump", filename=screenshot_path)
+        self.get_qemu_monitor().command("screendump", filename=screenshot_path)
         return screenshot_path
 
     def get_kd_capturer(self) -> XQEMUKDCapturer:
         """Can be used to retrieve text from the serial port"""
         return self._kd_capturer_instance
 
-    def _get_qemu_monitor(self) -> QEMUMonitorProtocol:
+    def get_qemu_monitor(self) -> QEMUMonitorProtocol:
         """:returns: a qemu monitor thats used to communicate with XQEMU"""
         if self._qemu_monitor_instance is None:
             self._qemu_monitor_instance = QEMUMonitorProtocol(
