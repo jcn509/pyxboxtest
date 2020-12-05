@@ -169,7 +169,7 @@ def test_hello_world(xqemu_blank_hdd_template):
         sleep(5)  # Ensure that the has had enough time to render fully
         # There may be multiple lines by the time we read the image!
         first_line = pytesseract.image_to_string(
-            Image.open(app.save_screenshot())
+            Image.open(app.save_screenshot("test.ppm"))
         ).split("\n")[0]
         assert first_line == "Hello nxdk!"
 

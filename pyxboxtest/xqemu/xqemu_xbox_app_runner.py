@@ -6,7 +6,6 @@ from ftplib import FTP
 import os
 import subprocess
 from typing import Optional, Sequence, Tuple
-import uuid
 
 from qmp import QEMUMonitorProtocol
 
@@ -34,6 +33,14 @@ class _XQEMUXboxAppRunnerGlobalParams:
     firmware: XQEMUFirmware
     headless: bool
     xqemu_binary: Optional[str] = "xqemu"
+
+
+def _get_unique_filename_prefix() -> str:
+    _get_unique_filename_prefix.prefix_num += 1
+    return str(_get_unique_filename_prefix.prefix_num) + "-"
+
+
+_get_unique_filename_prefix.prefix_num = 0
 
 
 class XQEMUXboxAppRunner(AbstractContextManager):
@@ -146,19 +153,23 @@ class XQEMUXboxAppRunner(AbstractContextManager):
         """
         print(self.get_qemu_monitor().command("system_reset"))
 
-    def save_screenshot(self, filename: Optional[str] = None) -> str:
+    def save_screenshot(self, filename: str) -> str:
         """Save a screenshot in ppm format
         The screenshot is saved in the temporary dir for this test
-        :param filename: if not given a unique filename will be generated
+        :param filename: this filename should not include a path to any \
+            directory i.e. it must be of the form test.ppm and not \
+                dir1/test.ppm A unique prefix will be added to it to ensure \
+                    its unique
         :returns: the path to the screenshot
         """
-        valid_ext = ".ppm"
-        if filename is None:
-            filename = uuid.uuid4().hex + valid_ext
-
         _, file_extension = os.path.splitext(filename)
-        if file_extension.lower() != valid_ext:
+        if file_extension.lower() != ".ppm":
             raise ValueError("File extension must be ppm!")
+
+        if any(seperator in filename for seperator in ("/", "\\", os.sep)):
+            raise ValueError("Path to directory is not allowed!")
+
+        filename = _get_unique_filename_prefix() + filename
 
         screenshot_path = os.path.join(get_temp_dirs().screenshots_dir, filename)
         self.get_qemu_monitor().command("screendump", filename=screenshot_path)
@@ -169,7 +180,7 @@ class XQEMUXboxAppRunner(AbstractContextManager):
         return self._kd_capturer_instance
 
     def get_qemu_monitor(self) -> QEMUMonitorProtocol:
-        """:returns: a qemu monitor thats used to communicate with XQEMU"""
+        """:returns: a qemu monitor that's used to communicate with XQEMU"""
         if self._qemu_monitor_instance is None:
             self._qemu_monitor_instance = QEMUMonitorProtocol(
                 ("", self._qemu_monitor_forward_port)

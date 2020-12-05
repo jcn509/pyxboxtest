@@ -43,6 +43,7 @@ Until I clean up this readme and write some proper docs, you can see some sample
 - Documentation
 - Safe parallel test execution
   - Need to ensure that xqemu ports are selected and then used atomically
+  - need to be sure that temporary file directories are unique for each process
   - Need to ensure that new HDD file names are selected atomically
     - May not be an issue as I believe pytest will automatically put them in new folders?
 - Get the package listed on PyPi
