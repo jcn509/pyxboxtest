@@ -30,8 +30,7 @@ def mock_exception_with_call_count() -> Mock:
     mock = Mock()
 
     def raise_count(mocked_function):
-        """Raises an exception that includes the call count of mocked_function
-        """
+        """Raises an exception that includes the call count of mocked_function"""
         raise ValueError(f"Error ar try {mocked_function.call_count}")
 
     mock.side_effect = lambda m=mock: raise_count(m)
@@ -50,7 +49,9 @@ class TestRetryEvery:
 
     @pytest.mark.parametrize("max_tries", tuple(range(1, 4)))
     def test_max_retries_exception_every_time(
-        self, max_tries: int, mock_exception_with_call_count,
+        self,
+        max_tries: int,
+        mock_exception_with_call_count,
     ):
         """Ensure that the funtion is called max_tries times if it always throws an exception"""
         with pytest.raises(Exception, match=f"Error ar try {max_tries}"):
@@ -61,7 +62,9 @@ class TestRetryEvery:
 
     @pytest.mark.parametrize("delay_before_retry", tuple(range(1, 4)))
     def test_correct_delay(
-        self, delay_before_retry: int, mock_exception_with_call_count,
+        self,
+        delay_before_retry: int,
+        mock_exception_with_call_count,
     ):
         """Ensure that sleep is called correctly when the callback throws an exception"""
         try:
@@ -117,11 +120,11 @@ class TestUnusedPorts:
         unused_ports = tuple(unused_ports)
 
         assert _all_unique(
-            tuple(port.port_number for port in unused_ports)
+            tuple(port.get_port_number() for port in unused_ports)
         ), "All the ports are unique"
 
     def test_ports_are_ints(self, unused_ports):
         """Ensure that all the port numbers are integers"""
         assert all(
-            isinstance(port.port_number, int) for port in unused_ports
+            isinstance(port.get_port_number(), int) for port in unused_ports
         ), "All the ports are integers"

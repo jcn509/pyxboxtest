@@ -2,6 +2,7 @@
 import pytest
 
 from .xqemu._xqemu_temporary_directories import _initialise_temp_dirs
+from .xqemu.xqemu_params import XQEMUFirmware
 from .xqemu.xqemu_xbox_app_runner import (
     XQEMUXboxAppRunner,
     _XQEMUXboxAppRunnerGlobalParams,
@@ -13,8 +14,9 @@ def _initial_framework_setup(request, tmp_path_factory):
     """Never use this fixture directly!"""
     _initialise_temp_dirs(tmp_path_factory)
     XQEMUXboxAppRunner._global_params = _XQEMUXboxAppRunnerGlobalParams(
-        request.config.getoption("--mcpx-rom"),
-        request.config.getoption("--bios"),
+        XQEMUFirmware(
+            request.config.getoption("--mcpx-rom"), request.config.getoption("--bios")
+        ),
         request.config.getoption("--headless"),
     )
 

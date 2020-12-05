@@ -11,13 +11,6 @@ from pyxboxtest.xqemu import XQEMUKDCapturer
 from pyxboxtest._utils import UnusedPort
 
 
-@pytest.fixture
-def mocked_socket(mocker):
-    """We don't really want to use a real socket here"""
-    mocker.patch("socket.socket.connect")
-    mocker.patch("socket.socket.recv")
-
-
 @pytest.mark.usefixtures("mocked_socket")
 @pytest.mark.parametrize("port", tuple(range(4)))
 def test_correct_socket(port: int):
@@ -71,7 +64,7 @@ def kd_capturer_for_strs(kd_strs: Tuple[str]) -> Iterator[XQEMUKDCapturer]:
     :param kd_strs: the strings that app running in xqemu would send over \
         the serial port
     """
-    port_number = UnusedPort().port_number
+    port_number = UnusedPort().get_port_number()
     with kd_server(kd_strs, port_number):
         xqemu_kd_capturer = XQEMUKDCapturer(port_number)
         try:

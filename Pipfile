@@ -16,7 +16,6 @@ pipenv-setup = "*"
 overrides = "*"
 pytest = "*"
 qmp = "*"
-cached-property = "*"
 
 [requires]
 python_version = "3.8"

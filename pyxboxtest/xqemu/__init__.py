@@ -8,6 +8,7 @@ from .xqemu_controller_buttons import XQEMUXboxControllerButtons
 from .xqemu_ftp_client import XQEMUFTPClient
 from .xqemu_kd_capturer import XQEMUKDCapturer
 from .xqemu_params import (
+    XQEMUFirmware,
     NetworkTransportProtocol,
     XQEMUNetworkForwardRule,
     XQEMURAMSize,

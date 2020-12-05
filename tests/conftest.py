@@ -8,6 +8,13 @@ pytest_plugins = ("pyxboxtest.pytest_plugin",)
 
 
 @pytest.fixture
+def mocked_socket(mocker):
+    """We don't really want to use a real socket here"""
+    mocker.patch("socket.socket.connect")
+    mocker.patch("socket.socket.recv")
+
+
+@pytest.fixture
 def mocked_subprocess_popen(mocker):
     """We don't really want to spawn new processes"""
     return mocker.patch("subprocess.Popen")

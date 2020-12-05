@@ -1,13 +1,13 @@
-"""A collection of utility functions requried by pyxboxtest but are not a part of the framework"""
+"""A collection of utility functions required by pyxboxtest but are not a part of the framework"""
 import socket
 import time
 from typing import Any, Callable, Set
 
-from cached_property import cached_property
-
 
 def retry_every(
-    thing_to_try: Callable[[], Any], max_tries: int = 15, delay_before_retry: int = 1
+    thing_to_try: Callable[[], Any],
+    max_tries: int = 300,
+    delay_before_retry: float = 0.05,
 ):
     """Keep trying something that may throw an exception
     :returns: whatever thing_to_try returns
@@ -60,9 +60,10 @@ class UnusedPort:
     def __del__(self):
         UnusedPort._reserved_ports.remove(self._port_number)
 
-    @cached_property  # Don't want to close the socket more than once!
-    def port_number(self) -> int:
+    def get_port_number(self) -> int:
         """The number of the port"""
         # Release control of the port so that it can be used
-        self._sock.close()
+        if self._sock is not None:
+            self._sock.close()
+        self._sock = None
         return self._port_number

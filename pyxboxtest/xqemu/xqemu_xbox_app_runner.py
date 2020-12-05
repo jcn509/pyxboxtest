@@ -1,10 +1,11 @@
 """All classes related to the use and control of XQEMU"""
 
 from contextlib import AbstractContextManager
+from dataclasses import dataclass
 from ftplib import FTP
 import os
 import subprocess
-from typing import NamedTuple, Optional, Sequence, Tuple
+from typing import Optional, Sequence, Tuple
 import uuid
 
 from qmp import QEMUMonitorProtocol
@@ -15,6 +16,7 @@ from .._utils import retry_every, UnusedPort
 # pytype: disable=pyi-error
 from ._xqemu_temporary_directories import get_temp_dirs
 from . import (
+    XQEMUFirmware,
     XQEMUFTPClient,
     XQEMUKDCapturer,
     XQEMUNetworkForwardRule,
@@ -25,12 +27,13 @@ from . import (
 # pytype: enable=pyi-error
 
 
-class _XQEMUXboxAppRunnerGlobalParams(NamedTuple):
+@dataclass(frozen=True)
+class _XQEMUXboxAppRunnerGlobalParams:
     """For internal use only! Should only be set by the pytest plugin"""
 
-    mcpx_rom_filename: str
-    xbox_bios_filename: str
+    firmware: XQEMUFirmware
     headless: bool
+    xqemu_binary: Optional[str] = "xqemu"
 
 
 class XQEMUXboxAppRunner(AbstractContextManager):
@@ -67,44 +70,45 @@ class XQEMUXboxAppRunner(AbstractContextManager):
         # need some way of ensuring that only one process at a time can do this
         # so as to avoid having multiple processes using the same ports
         # with parallel test execution
-        mcpx_rom = XQEMUXboxAppRunner._global_params.mcpx_rom_filename
-        xbox_bios = XQEMUXboxAppRunner._global_params.xbox_bios_filename
-
         # To allow parallel test execution different instances must be using different ports
-        self._ftp_forward_port = UnusedPort()
-        self._kd_forward_port = UnusedPort()
-        self._qemu_monitor_forward_port = UnusedPort()
+        self._ftp_forward_port = UnusedPort().get_port_number()
+        self._kd_forward_port = UnusedPort().get_port_number()
+        self._qemu_monitor_forward_port = UnusedPort().get_port_number()
 
         self._xqemu_args = (
-            "xqemu",
-            "-cpu",
-            "pentium3",
-            "-machine",
-            f"xbox,bootrom={mcpx_rom},short_animation",
-            "-m",
-            ram_size.value,
-            "-bios",
-            xbox_bios,
-            "-device",  # Is this the right controller connection code?
-            "usb-hub,port=3",
-            "-device",
-            "usb-xbox-gamepad,port=3.1",
-            "-device",
-            "lpc47m157",
-            "-net",
-            "nic,model=nvnet",
-            "-net",
-            f"user,hostfwd=tcp:127.0.0.1:{self._ftp_forward_port.port_number}-:21",
-            "-serial",
-            f"tcp::{self._kd_forward_port.port_number},server",
-            "-qmp",
-            f"tcp::{self._qemu_monitor_forward_port.port_number},server,nowait",
+            (
+                XQEMUXboxAppRunner._global_params.xqemu_binary,
+                "-cpu",
+                "pentium3",
+                "-m",
+                ram_size.value,
+            )
+            + XQEMUXboxAppRunner._global_params.firmware.get_command_line_args()
+            + (
+                "-device",  # Is this the right controller connection code?
+                "usb-hub,port=3",
+                "-device",
+                "usb-xbox-gamepad,port=3.1",
+                "-device",
+                "lpc47m157",
+                "-net",
+                "nic,model=nvnet",
+                "-net",
+                f"user,hostfwd=tcp::{self._ftp_forward_port}-:21",
+                "-serial",
+                # We wait for the KD capturer to connect before we do anything.
+                # This ensures that we do not lose any of the KD output
+                f"tcp::{self._kd_forward_port},server",
+                "-qmp",
+                # We don't wait for qmp client to connect as we may not need it
+                f"tcp::{self._qemu_monitor_forward_port},server,nowait",
+            )
         )
         if headless:
             self._xqemu_args += ("-display", "egl-headless")
 
         if hdd_filename is not None:
-            self._xqemu_args += ("-drive", f"file={hdd_filename},index=0,media=disk")
+            self._xqemu_args += ("-drive", f"index=0,media=disk,file={hdd_filename}")
         if dvd_filename is not None:
             self._xqemu_args += ("-drive", f"index=1,media=cdrom,file={dvd_filename}")
 
@@ -116,7 +120,7 @@ class XQEMUXboxAppRunner(AbstractContextManager):
         self, username: Optional[str] = None, password: Optional[str] = None
     ) -> FTP:
         """This assumes that an FTP client is actually running in the app..."""
-        ftp_client = XQEMUFTPClient(self._ftp_forward_port.port_number)
+        ftp_client = XQEMUFTPClient(self._ftp_forward_port)
         if username is not None and password is not None:
             ftp_client.login(username, password)
         return ftp_client
@@ -176,7 +180,7 @@ class XQEMUXboxAppRunner(AbstractContextManager):
         """:returns: a qemu monitor thats used to communicate with XQEMU"""
         if self._qemu_monitor_instance is None:
             self._qemu_monitor_instance = QEMUMonitorProtocol(
-                ("", self._qemu_monitor_forward_port.port_number)
+                ("", self._qemu_monitor_forward_port)
             )
             # If called too early it won't be able to connect first try as XQEMU is not ready yet
             retry_every(self._qemu_monitor_instance.connect)
@@ -184,7 +188,7 @@ class XQEMUXboxAppRunner(AbstractContextManager):
 
     def __enter__(self):
         self._app = subprocess.Popen(self._xqemu_args)
-        self._kd_capturer_instance = XQEMUKDCapturer(self._kd_forward_port.port_number)
+        self._kd_capturer_instance = XQEMUKDCapturer(self._kd_forward_port)
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
