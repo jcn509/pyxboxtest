@@ -146,30 +146,22 @@ class XQEMUXboxAppRunner(AbstractContextManager):
         """
         print(self._get_qemu_monitor().command("system_reset"))
 
-    def save_screenshot_non_temp(self, filename: str) -> None:
-        """Save a screenshot in ppm format in some place
-
-        You should probably use save_screenshot, only use this method if you
-        want to keep the screenshots after the test e.g. if you are using this
-        lib to keep screenshots up to date for each release at the same time
-        as testing.
-        """
-        _, file_extension = os.path.splitext(filename)
-        if file_extension.lower() != ".ppm":
-            raise ValueError("File extension must be ppm!")
-
-        self._get_qemu_monitor().command("screendump", filename=filename)
-
     def save_screenshot(self, filename: Optional[str] = None) -> str:
         """Save a screenshot in ppm format
         The screenshot is saved in the temporary dir for this test
         :param filename: if not given a unique filename will be generated
         :returns: the path to the screenshot
         """
+        valid_ext = ".ppm"
         if filename is None:
-            filename = uuid.uuid4().hex + ".ppm"
+            filename = uuid.uuid4().hex + valid_ext
+
+        _, file_extension = os.path.splitext(filename)
+        if file_extension.lower() != valid_ext:
+            raise ValueError("File extension must be ppm!")
+
         screenshot_path = os.path.join(get_temp_dirs().screenshots_dir, filename)
-        self.save_screenshot_non_temp(screenshot_path)
+        self._get_qemu_monitor().command("screendump", filename=screenshot_path)
         return screenshot_path
 
     def get_kd_capturer(self) -> XQEMUKDCapturer:
