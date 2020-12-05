@@ -71,6 +71,11 @@ def get_common_params(
 
 
 class XqemuParamTestParams(NamedTuple):
+    """All the data needed to test the parameters passed to xqemu.
+
+    This class exists for type checking purposes only
+    """
+
     xqemu_binary: str
     hdd_filename: Optional[str]
     dvd_filename: Optional[str]
