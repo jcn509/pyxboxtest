@@ -101,30 +101,27 @@ class TestRetryEvery:
 
 
 @pytest.mark.parametrize(
-    "unused_ports",
-    tuple(
-        (
-            UnusedPort() for _ in range(number_of_ports)
-        )  # Generator not tuple so that once a test is done those ports can be freed
-        for number_of_ports in range(1, 4000, 100)
-    ),
+    "number_of_ports",
+    tuple(range(1, 4000, 100)),
 )
 class TestUnusedPorts:
     """tests for :py:class:`~pyxboxtest.utils.UnusedPorts`
     There is no mocking here to be sure that it actually works.
     """
 
-    def test_ports_unique(self, unused_ports):
+    def test_ports_unique(self, number_of_ports: int):
         """Ensures that no two ports that are returned are the same"""
         # For this test to work they must exist at the same time
-        unused_ports = tuple(unused_ports)
+        unused_ports = tuple(UnusedPort() for _ in range(number_of_ports))
 
         assert _all_unique(
             tuple(port.get_port_number() for port in unused_ports)
         ), "All the ports are unique"
 
-    def test_ports_are_ints(self, unused_ports):
+    def test_ports_are_ints(self, number_of_ports):
         """Ensure that all the port numbers are integers"""
+        unused_ports = tuple(UnusedPort() for _ in range(number_of_ports))
+
         assert all(
             isinstance(port.get_port_number(), int) for port in unused_ports
         ), "All the ports are integers"
