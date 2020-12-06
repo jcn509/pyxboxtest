@@ -12,8 +12,17 @@ def _validate_ip_address(ip_address: Optional[str]) -> None:
     """:raises ValueError: if the IP is not blank or does not have the\
         correct format
     """
-    if ip_address and not _IP_REGEX.match(ip_address):
+    if ip_address is None:
+        return
+
+    if not _IP_REGEX.match(ip_address):
         raise ValueError("Invalid IP address")
+
+    octets = ip_address.split(".")
+    if any(octet.lstrip("0") != octet for octet in octets):
+        raise ValueError("IP address octets cannot contain leading 0s")
+    if any(int(octet) > 255 for octet in octets):
+        raise ValueError("IP address octets larger than 255")
 
 
 def _validate_filename(filename: str) -> None:
@@ -61,10 +70,10 @@ class XQEMUFirmware:
 
     def __post_init__(self):
         """Make sure that the files exist"""
-        # If filenames are not None or ""
-        if self.mcpx_rom_filename is not None and self.mcpx_rom_filename:
+        # If files are not ""
+        if self.mcpx_rom_filename:
             _validate_filename(self.mcpx_rom_filename)
-        if self.xbox_bios_filename is not None and self.xbox_bios_filename:
+        if self.xbox_bios_filename:
             _validate_filename(self.xbox_bios_filename)
 
     def get_command_line_args(self) -> Tuple[str, ...]:
