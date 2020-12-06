@@ -61,8 +61,11 @@ class XQEMUFirmware:
 
     def __post_init__(self):
         """Make sure that the files exist"""
-        _validate_filename(self.mcpx_rom_filename)
-        _validate_filename(self.xbox_bios_filename)
+        # If filenames are not None or ""
+        if self.mcpx_rom_filename is not None and self.mcpx_rom_filename:
+            _validate_filename(self.mcpx_rom_filename)
+        if self.xbox_bios_filename is not None and self.xbox_bios_filename:
+            _validate_filename(self.xbox_bios_filename)
 
     def get_command_line_args(self) -> Tuple[str, ...]:
         """:returns: the command line arguments that need to be given to xqemu \
