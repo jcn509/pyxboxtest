@@ -17,11 +17,11 @@ jobs:
       shell: bash
       run: |
         if [ "$RUNNER_OS" == "Linux" ]; then
-            sudo apt install qemu-utils
+            sudo apt-get update && sudo apt install qemu-utils
         elif [ "$RUNNER_OS" == "Windows" ]; then
             choco install qemu-img
         elif [ "$RUNNER_OS" == "macOS" ]; then
-            brew install qemu
+            brew update && brew install qemu
         else
             echo "$RUNNER_OS not supported"
             exit 1
