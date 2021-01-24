@@ -60,5 +60,7 @@ jobs:
             pipenv run pytype pyxboxtest tests
         fi
     - name: Test with pytest
+      # Will find a way to avoid the flags
+      # Can only run unit tests as e2e tests need a BIOS and MCPX ROM
       run: |
-        pipenv run pytest tests
+        pipenv run pytest tests/unit_tests --bios "" --mcpx-rom ""

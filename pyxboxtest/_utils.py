@@ -1,7 +1,31 @@
 """A collection of utility functions required by pyxboxtest but are not a part of the framework"""
+from ftplib import FTP
 import socket
 import time
 from typing import Any, Callable, Set
+
+def remove_ftp_dir(ftp: FTP, path: str) -> None:
+    """Deletes a directories contents (recursively) before then deletes the
+    directory itself
+    """
+    path = path.rstrip("/")
+    lines = []
+    ftp.retrlines(f"LIST {path}/", lines.append)
+
+    for line in lines:
+        components = line.split(" ")
+        name = " ".join(components[7:])
+        is_dir = components[0][0] == "d"
+
+        if name in [".", ".."]:
+            continue
+        elif not is_dir:
+            ftp.delete(f"{path}/{name}")
+        else:
+            remove_ftp_dir(ftp, f"{path}/{name}")
+
+    ftp.rmd(path)
+
 
 
 def retry_every(
