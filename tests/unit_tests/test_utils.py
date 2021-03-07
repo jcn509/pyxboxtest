@@ -4,7 +4,12 @@ import time
 from mock import Mock
 import pytest
 
-from pyxboxtest._utils import retry_every, UnusedPort
+from pyxboxtest._utils import (
+    retry_every,
+    UnusedPort,
+    validate_xbox_directory_path,
+    validate_xbox_file_path,
+)
 
 
 # Grouped into classes as a way to organise the tests
@@ -49,9 +54,7 @@ class TestRetryEvery:
 
     @pytest.mark.parametrize("max_tries", tuple(range(1, 4)))
     def test_max_retries_exception_every_time(
-        self,
-        max_tries: int,
-        mock_exception_with_call_count,
+        self, max_tries: int, mock_exception_with_call_count,
     ):
         """Ensure that the funtion is called max_tries times if it always throws an exception"""
         with pytest.raises(Exception, match=f"Error ar try {max_tries}"):
@@ -62,9 +65,7 @@ class TestRetryEvery:
 
     @pytest.mark.parametrize("delay_before_retry", tuple(range(1, 4)))
     def test_correct_delay(
-        self,
-        delay_before_retry: int,
-        mock_exception_with_call_count,
+        self, delay_before_retry: int, mock_exception_with_call_count,
     ):
         """Ensure that sleep is called correctly when the callback throws an exception"""
         try:
@@ -101,8 +102,7 @@ class TestRetryEvery:
 
 
 @pytest.mark.parametrize(
-    "number_of_ports",
-    tuple(range(1, 4000, 100)),
+    "number_of_ports", tuple(range(1, 4000, 100)),
 )
 class TestUnusedPorts:
     """tests for :py:class:`~pyxboxtest.utils.UnusedPorts`
@@ -125,3 +125,64 @@ class TestUnusedPorts:
         assert all(
             isinstance(port.get_port_number(), int) for port in unused_ports
         ), "All the ports are integers"
+
+
+@pytest.mark.parametrize(
+    "filepath", ("/C/test/file.txt", "/E/file.txt", "/G/dir1/dir2/file.ext")
+)
+def test_validate_xbox_file_path_valid_paths(filepath: str):
+    """Ensure that no exceptions are thrown for valid fi,e paths"""
+    validate_xbox_file_path(filepath)
+
+
+@pytest.mark.parametrize(
+    "filepath",
+    (
+        "C/test/file.txt",
+        "/D/",
+        "D/",
+        "/F/dir1/dir2/",
+        "/e/file.txt",
+        "/A/dir1/dir2/",
+        "/B/dir1/dir2/file.ext",
+        "/e",
+        "/Q",
+        "/1",
+        "/X/",
+        "/Y/",
+        "/Z/",
+    ),
+)
+def test_validate_xbox_file_path_invalid_paths(filepath: str):
+    """Ensure exceptions are thrown for invalid paths"""
+    with pytest.raises(IOError):
+        validate_xbox_file_path(filepath)
+
+
+@pytest.mark.parametrize(
+    "directory_path", ("/C/test/", "/E/dir1/dir2/", "/D/", "/X/", "/Y/", "/Z/")
+)
+def test_validate_xbox_directory_path_valid_paths(directory_path: str):
+    """Ensure that no exceptions are thrown for valid fi,e paths"""
+    validate_xbox_directory_path(directory_path)
+
+
+@pytest.mark.parametrize(
+    "directory_path",
+    (
+        "C/test/file.txt",
+        "/C/test/file.txt",
+        "D/",
+        "/F/dir1/dir2",
+        "/e/file.txt",
+        "/A/dir1/dir2/",
+        "/B/dir1/dir2/file.ext",
+        "/e",
+        "/Q",
+        "/1",
+    ),
+)
+def test_validate_xbox_directory_path_invalid_paths(directory_path: str):
+    """Ensure exceptions are thrown for invalid paths"""
+    with pytest.raises(IOError):
+        validate_xbox_directory_path(directory_path)

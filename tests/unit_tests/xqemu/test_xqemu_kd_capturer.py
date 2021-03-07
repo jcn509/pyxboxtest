@@ -129,12 +129,7 @@ def test_get_num_chars(data_to_send: str, num_chars_to_receive: int):
 
 
 @pytest.mark.parametrize(
-    "data_to_send,",
-    (
-        "test",
-        "test\n\n\asdadasd",
-        "".join("a" for _ in range(10000)),
-    ),
+    "data_to_send,", ("test", "test\n\n\asdadasd", "".join("a" for _ in range(10000)),),
 )
 def test_get_all_data_available(data_to_send: str):
     """Ensure that we can correctly retrieve all data that is currently

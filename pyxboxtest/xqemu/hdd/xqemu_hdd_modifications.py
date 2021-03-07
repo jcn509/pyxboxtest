@@ -4,11 +4,11 @@ when it is created
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Tuple
+from typing import IO, Tuple
 
 from overrides import overrides
 
-from ._xqemu_hdd_template_modifier import _XQEMUHDDTemplateModifier
+from .xqemu_hdd_image_modifier import XQEMUHDDImageModifer
 
 
 @dataclass(frozen=True)
@@ -16,26 +16,25 @@ class HDDModification(ABC):
     """Perform some modification to a HDD template"""
 
     @abstractmethod
-    def perform_modification(self, hdd_modifier: _XQEMUHDDTemplateModifier) -> None:
+    def perform_modification(self, hdd_modifier: XQEMUHDDImageModifer) -> None:
         """Carry out the modification"""
         raise NotImplementedError
 
 
-# Directory operations?
-# Need to be able to create a directory. Maybe copy a directory as well?
+# TODO: support all other operations?
 
 
 @dataclass(frozen=True)
 class AddFile(HDDModification):
     """Add a file to a HDD template"""
 
-    local_filename: str
     xbox_filename: str
+    file_contents: IO
 
     @overrides
-    def perform_modification(self, hdd_modifier: _XQEMUHDDTemplateModifier) -> None:
+    def perform_modification(self, hdd_modifier: XQEMUHDDImageModifer) -> None:
         """Add the file"""
-        hdd_modifier.add_file(self.local_filename, self.xbox_filename)
+        hdd_modifier.add_file_to_xbox(self.xbox_filename, self.file_contents)
 
 
 @dataclass(frozen=True)
@@ -45,9 +44,9 @@ class DeleteFile(HDDModification):
     filename: str
 
     @overrides
-    def perform_modification(self, hdd_modifier: _XQEMUHDDTemplateModifier) -> None:
+    def perform_modification(self, hdd_modifier: XQEMUHDDImageModifer) -> None:
         """Delete the file"""
-        hdd_modifier.delete_file(self.filename)
+        hdd_modifier.delete_file_from_xbox(self.filename)
 
 
 @dataclass(frozen=True)
@@ -58,9 +57,9 @@ class RenameFile(HDDModification):
     new_filename: str
 
     @overrides
-    def perform_modification(self, hdd_modifier: _XQEMUHDDTemplateModifier) -> None:
+    def perform_modification(self, hdd_modifier: XQEMUHDDImageModifer) -> None:
         """Rename the file"""
-        hdd_modifier.rename_file(self.old_filename, self.new_filename)
+        hdd_modifier.rename_file_on_xbox(self.old_filename, self.new_filename)
 
 
 @dataclass(frozen=True)
@@ -75,7 +74,7 @@ class BatchModification(HDDModification):
     modifications: Tuple[HDDModification, ...]
 
     @overrides
-    def perform_modification(self, hdd_modifier: _XQEMUHDDTemplateModifier) -> None:
+    def perform_modification(self, hdd_modifier: XQEMUHDDImageModifer) -> None:
         """Perform all the modifications in order"""
         for modification in self.modifications:
             modification.perform_modification(hdd_modifier)

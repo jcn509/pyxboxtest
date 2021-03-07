@@ -11,7 +11,7 @@ import pytest
 
 from .._xqemu_temporary_directories import get_temp_dirs
 from .xqemu_hdd_modifications import HDDModification
-from ._xqemu_hdd_template_modifier import _XQEMUHDDTemplateModifier
+from .xqemu_hdd_image_modifier import XQEMUHDDImageModifer
 
 # May use this later on, or maybe not
 # Shareable disk for allowing file access during a test
@@ -66,7 +66,7 @@ class XQEMUHDDTemplate:
         _copy_hdd_image(base_image_file_path, self._template_file_path)
         # Make all the changes here
         if hdd_modifications:
-            with _XQEMUHDDTemplateModifier(self._template_file_path) as hdd_modifier:
+            with XQEMUHDDImageModifer(self._template_file_path) as hdd_modifier:
                 for change in hdd_modifications:
                     change.perform_modification(hdd_modifier)
 

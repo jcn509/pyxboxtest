@@ -12,10 +12,7 @@ from pyxboxtest.xqemu import (
 
 @pytest.mark.parametrize(
     "invalid_mcpx_filename,invalid_bios_filename",
-    (
-        ("not a real file", __file__),
-        (__file__, "not a real file"),
-    ),
+    (("not a real file", __file__), (__file__, "not a real file"),),
 )
 def test_xqemu_firmware_invalid_filenames(
     invalid_mcpx_filename: str, invalid_bios_filename: str
@@ -120,8 +117,7 @@ def test_xqemu_firmware_generates_correct_arguments(
     ),
 )
 def test_xqemu_network_forward_rule_get_rule_str(
-    network_forward_rule: XQEMUNetworkForwardRule,
-    expected_str: str,
+    network_forward_rule: XQEMUNetworkForwardRule, expected_str: str,
 ):
     """Ensure that
     :py:class:`~pyxboxtest.xqemu.xqemu_params.XQEMUNetworkForwardRule` gives
@@ -131,12 +127,7 @@ def test_xqemu_network_forward_rule_get_rule_str(
 
 
 @pytest.mark.parametrize(
-    "xbox_port,forward_to_port",
-    (
-        (-1, 0),
-        (-1, 44),
-        (1, -1),
-    ),
+    "xbox_port,forward_to_port", ((-1, 0), (-1, 44), (1, -1),),
 )
 def test_xqemu_network_forward_rule_invalid_port_numbers(
     xbox_port: int, forward_to_port: int

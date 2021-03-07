@@ -196,7 +196,12 @@ class XQEMUXboxAppRunner(AbstractContextManager):
 
     def __exit__(self, exc_type, exc_value, traceback):
         print("Uncaptured KD output:")
-        self._kd_capturer_instance.get_all()  # Will log it
+
+        # TODO tidy this logic up
+        try:
+            self._kd_capturer_instance.get_all()  # Will log it
+        except Exception as e:
+            print("Error getting uncaptured KD output:", str(e))
 
         self._kd_capturer_instance.close()
         if self._qemu_monitor_instance is not None:

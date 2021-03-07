@@ -1,8 +1,28 @@
 """A collection of utility functions required by pyxboxtest but are not a part of the framework"""
 from ftplib import FTP
+import re
 import socket
 import time
 from typing import Any, Callable, Set
+
+
+def validate_xbox_file_path(path: str) -> None:
+    """:raises IOError: if the path is not of the correct form"""
+    if not re.match(r"^/[CDEFGXYZ]/.*[^/]$", path):
+        raise IOError(
+            f"Path {path} must be of the form\
+            /<Drive letter/<path> e.g. /C/test/file.txt"
+        )
+
+
+def validate_xbox_directory_path(path: str) -> None:
+    """:raises IOError: if the path is not of the correct form"""
+    if not re.match(r"^/[CDEFGXYZ]/($|(.+/$))", path):
+        raise IOError(
+            f"Path {path} must be of the form\
+            /<Drive letter/<path>/ e.g. /C/test/"
+        )
+
 
 def remove_ftp_dir(ftp: FTP, path: str) -> None:
     """Deletes a directories contents (recursively) before then deletes the
@@ -25,7 +45,6 @@ def remove_ftp_dir(ftp: FTP, path: str) -> None:
             remove_ftp_dir(ftp, f"{path}/{name}")
 
     ftp.rmd(path)
-
 
 
 def retry_every(

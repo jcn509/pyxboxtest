@@ -21,7 +21,7 @@ from pyxboxtest.xqemu.hdd import (
 # pylint: disable=no-self-use
 
 # Note: there are deliberately spaces in the name, just to make sure that is OK.
-# This is seperate from the main image to avoid bugs in the code affecting the
+# This is separate from the main image to avoid bugs in the code affecting the
 # main image without anyone realising.
 _TEST_BLANK_HDD_IMAGE = os.path.join(
     os.path.dirname(__file__), "blank hdd image for tests.qcow2"
@@ -29,12 +29,10 @@ _TEST_BLANK_HDD_IMAGE = os.path.join(
 
 
 @pytest.fixture(autouse=True)
-def mock_xqemu_hdd_template_modifier(mocker):
+def mockxqemu_hdd_image_modifier(mocker):
     """We don't want to launch an instance of XQEMU and actually modify a HDD
     """
-    return mocker.patch(
-        "pyxboxtest.xqemu.hdd.xqemu_hdd_template._XQEMUHDDTemplateModifier"
-    )
+    return mocker.patch("pyxboxtest.xqemu.hdd.xqemu_hdd_template.XQEMUHDDImageModifer")
 
 
 @pytest.fixture(autouse=True)
@@ -107,14 +105,12 @@ class TestWithoutCreatingImage:
         with pytest.raises(ValueError):
             XQEMUHDDTemplate(template_name, "whatever")
 
-    def test_no_modifications_no_modifier_created(
-        self, mock_xqemu_hdd_template_modifier
-    ):
+    def test_no_modifications_no_modifier_created(self, mockxqemu_hdd_image_modifier):
         """Ensure that if no modifications are wanted, we do not bother
         instantiating a modifer
         """
         XQEMUHDDTemplate("any template name", "whatever")
-        mock_xqemu_hdd_template_modifier.assert_not_called()
+        mockxqemu_hdd_image_modifier.assert_not_called()
 
     @pytest.mark.parametrize(
         "template_name, hdd_modifications",
@@ -129,23 +125,23 @@ class TestWithoutCreatingImage:
         self,
         template_name: str,
         hdd_modifications: Tuple[HDDModification],
-        mock_xqemu_hdd_template_modifier,
+        mockxqemu_hdd_image_modifier,
     ):
         """Ensure that a modifier for the template is created if we want
         modifications to be made
         """
         XQEMUHDDTemplate(template_name, "whatever", hdd_modifications)
         print(
-            dir(mock_xqemu_hdd_template_modifier),
-            mock_xqemu_hdd_template_modifier.method_calls,
+            dir(mockxqemu_hdd_image_modifier),
+            mockxqemu_hdd_image_modifier.method_calls,
         )
-        mock_xqemu_hdd_template_modifier.assert_called_once_with(
+        mockxqemu_hdd_image_modifier.assert_called_once_with(
             _get_hdd_template_path(template_name)
         )
         for hdd_modification in hdd_modifications:
             # pytype: disable=attribute-error # pylint: disable=no-member
             hdd_modification.perform_modification.assert_called_once_with(
-                mock_xqemu_hdd_template_modifier.return_value.__enter__.return_value
+                mockxqemu_hdd_image_modifier.return_value.__enter__.return_value
             )
             # pytype: enable=attribute-error # pylint: enable=no-member
 

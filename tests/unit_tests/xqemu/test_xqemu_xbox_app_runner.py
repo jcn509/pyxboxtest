@@ -60,10 +60,7 @@ def get_common_params(
     """
     return (
         (xqemu_binary, "-cpu", "pentium3")
-        + (
-            "-m",
-            ram_size.value,
-        )
+        + ("-m", ram_size.value,)
         + firmware_params
         + (
             "-device",  # Is this the right controller connection code?
