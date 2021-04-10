@@ -13,6 +13,7 @@ from pyxboxtest.xqemu import (
 from pyxboxtest.xqemu.xqemu_xbox_app_runner import _XQEMUXboxAppRunnerGlobalParams
 from pyxboxtest.xqemu._xqemu_temporary_directories import get_temp_dirs
 
+_XQEMU_DEFAULT_BINARY = "xqemu"
 
 @pytest.fixture(autouse=True)
 def mocked_kd_capturer(mocker):
@@ -100,10 +101,10 @@ class XqemuParamTestParams(NamedTuple):
     "xqemu_binary,hdd_filename,dvd_filename,ram_size,global_headless,force_headless,firmware_params",
     (
         XqemuParamTestParams(
-            "xqemu", None, None, XQEMURAMSize.RAM64m, False, False, ("test", "firmware")
+            _XQEMU_DEFAULT_BINARY, None, None, XQEMURAMSize.RAM64m, False, False, ("test", "firmware")
         ),
         XqemuParamTestParams(
-            "xqemu",
+            _XQEMU_DEFAULT_BINARY,
             "hdd image",
             None,
             XQEMURAMSize.RAM64m,
@@ -112,7 +113,7 @@ class XqemuParamTestParams(NamedTuple):
             ("test", "firmware"),
         ),
         XqemuParamTestParams(
-            "xqemu",
+            _XQEMU_DEFAULT_BINARY,
             None,
             "dvd image",
             XQEMURAMSize.RAM64m,
@@ -121,7 +122,7 @@ class XqemuParamTestParams(NamedTuple):
             ("test", "firmware"),
         ),
         XqemuParamTestParams(
-            "xqemu",
+            _XQEMU_DEFAULT_BINARY,
             "hdd image",
             "dvd image",
             XQEMURAMSize.RAM64m,
@@ -130,10 +131,10 @@ class XqemuParamTestParams(NamedTuple):
             ("one", "two"),
         ),
         XqemuParamTestParams(
-            "xqemu", None, None, XQEMURAMSize.RAM64m, False, False, ("test", "firmware")
+            _XQEMU_DEFAULT_BINARY, None, None, XQEMURAMSize.RAM64m, False, False, ("test", "firmware")
         ),
         XqemuParamTestParams(
-            "xqemu",
+            _XQEMU_DEFAULT_BINARY,
             "hdd image 2",
             None,
             XQEMURAMSize.RAM64m,
@@ -142,7 +143,7 @@ class XqemuParamTestParams(NamedTuple):
             ("test", "firmware"),
         ),
         XqemuParamTestParams(
-            "xqemu",
+            _XQEMU_DEFAULT_BINARY,
             None,
             "dvd image 2",
             XQEMURAMSize.RAM64m,
@@ -151,7 +152,7 @@ class XqemuParamTestParams(NamedTuple):
             ("test", "firmware"),
         ),
         XqemuParamTestParams(
-            "xqemu",
+            _XQEMU_DEFAULT_BINARY,
             "hdd image 2",
             "dvd image 2",
             XQEMURAMSize.RAM64m,
@@ -160,7 +161,7 @@ class XqemuParamTestParams(NamedTuple):
             ("test", "firmware"),
         ),
         XqemuParamTestParams(
-            "xqemu",
+            _XQEMU_DEFAULT_BINARY,
             None,
             None,
             XQEMURAMSize.RAM128m,
@@ -169,7 +170,7 @@ class XqemuParamTestParams(NamedTuple):
             ("test", "firmware"),
         ),
         XqemuParamTestParams(
-            "xqemu",
+            _XQEMU_DEFAULT_BINARY,
             None,
             "dvd image 2",
             XQEMURAMSize.RAM64m,
@@ -178,7 +179,7 @@ class XqemuParamTestParams(NamedTuple):
             ("test", "firmware"),
         ),
         XqemuParamTestParams(
-            "xqemu",
+            _XQEMU_DEFAULT_BINARY,
             "hdd image 2",
             "dvd image 2",
             XQEMURAMSize.RAM64m,

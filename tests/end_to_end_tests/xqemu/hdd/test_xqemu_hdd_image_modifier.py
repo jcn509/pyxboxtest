@@ -77,7 +77,7 @@ def test_file_creation(xqemu_blank_hdd_template: XQEMUHDDTemplate, file_path: st
 def test_directory_creation(
     xqemu_blank_hdd_template: XQEMUHDDTemplate, directory_path: str
 ):
-    """Ensures that files can be correctly created on the HDD"""
+    """Ensures that directories can be correctly created on the HDD"""
     hdd_image = xqemu_blank_hdd_template.create_fresh_hdd()
     with XQEMUHDDImageModifer(hdd_image) as modifier:
         modifier.add_directory_to_xbox(directory_path)
@@ -86,3 +86,30 @@ def test_directory_creation(
         assert modifier.get_xbox_directory_contents(parent_path) == [
             directory
         ], f"{parent_path} contains only {directory}"
+
+def test_delete_empty_directory(xqemu_blank_hdd_template: XQEMUHDDTemplate):
+    hdd_image = xqemu_blank_hdd_template.create_fresh_hdd()
+    with XQEMUHDDImageModifer(hdd_image) as modifier:
+        modifier.add_directory_to_xbox("/C/foo")
+ 
+        assert modifier.get_xbox_directory_contents("/C/") == ["foo"], "directory exists before"
+
+        modifier.delete_directory_from_xbox("/C/foo/")
+
+        assert modifier.get_xbox_directory_contents("/C/") == [""], "directory was deleted"
+
+
+def test_delete_directory_with_content(xqemu_blank_hdd_template: XQEMUHDDTemplate):
+    hdd_image = xqemu_blank_hdd_template.create_fresh_hdd()
+    with XQEMUHDDImageModifer(hdd_image) as modifier:
+        modifier.add_directory_to_xbox("/C/dir")
+        modifier.add_file_to_xbox(
+            "/C/dir/file.txt", BytesIO(f"some content".encode("utf8"))
+        )
+        assert modifier.get_xbox_directory_contents("/C/") == ["dir"], "directory exists before"
+        assert modifier.get_xbox_directory_contents("/C/dir/") == ["file.txt"], "file exists before"
+
+        modifier.delete_directory_from_xbox("/C/dir/")
+
+        assert modifier.get_xbox_directory_contents("/C/") == [""], "directory and file were both deleted"
+
