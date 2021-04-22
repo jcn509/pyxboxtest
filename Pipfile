@@ -11,6 +11,7 @@ mock = "*"
 pytest-mock = "*"
 pytype = "*"
 pipenv-setup = "*"
+pytest-xdist = "*"
 
 [packages]
 overrides = "*"
