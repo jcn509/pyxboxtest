@@ -15,6 +15,7 @@ from pyxboxtest.xqemu._xqemu_temporary_directories import get_temp_dirs
 
 _XQEMU_DEFAULT_BINARY = "xqemu"
 
+
 @pytest.fixture(autouse=True)
 def mocked_kd_capturer(mocker):
     """The KD capturer will try to connect to a socket that does not exist
@@ -101,7 +102,13 @@ class XqemuParamTestParams(NamedTuple):
     "xqemu_binary,hdd_filename,dvd_filename,ram_size,global_headless,force_headless,firmware_params",
     (
         XqemuParamTestParams(
-            _XQEMU_DEFAULT_BINARY, None, None, XQEMURAMSize.RAM64m, False, False, ("test", "firmware")
+            _XQEMU_DEFAULT_BINARY,
+            None,
+            None,
+            XQEMURAMSize.RAM64m,
+            False,
+            False,
+            ("test", "firmware"),
         ),
         XqemuParamTestParams(
             _XQEMU_DEFAULT_BINARY,
@@ -131,7 +138,13 @@ class XqemuParamTestParams(NamedTuple):
             ("one", "two"),
         ),
         XqemuParamTestParams(
-            _XQEMU_DEFAULT_BINARY, None, None, XQEMURAMSize.RAM64m, False, False, ("test", "firmware")
+            _XQEMU_DEFAULT_BINARY,
+            None,
+            None,
+            XQEMURAMSize.RAM64m,
+            False,
+            False,
+            ("test", "firmware"),
         ),
         XqemuParamTestParams(
             _XQEMU_DEFAULT_BINARY,

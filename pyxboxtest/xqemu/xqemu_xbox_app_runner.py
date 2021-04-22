@@ -108,7 +108,7 @@ class XQEMUXboxAppRunner(AbstractContextManager):
                 f"tcp::{self._kd_forward_port},server",
                 "-qmp",
                 # We don't wait for qmp client to connect as we may not need it
-                f"tcp::{self._qemu_monitor_forward_port},server,nowait"
+                f"tcp::{self._qemu_monitor_forward_port},server,nowait",
             )
         )
         if headless:

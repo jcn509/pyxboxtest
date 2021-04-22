@@ -87,16 +87,21 @@ def test_directory_creation(
             directory
         ], f"{parent_path} contains only {directory}"
 
+
 def test_delete_empty_directory(xqemu_blank_hdd_template: XQEMUHDDTemplate):
     hdd_image = xqemu_blank_hdd_template.create_fresh_hdd()
     with XQEMUHDDImageModifer(hdd_image) as modifier:
         modifier.add_directory_to_xbox("/C/foo/")
- 
-        assert modifier.get_xbox_directory_contents("/C/") == ["foo"], "directory exists before"
+
+        assert modifier.get_xbox_directory_contents("/C/") == [
+            "foo"
+        ], "directory exists before"
 
         modifier.delete_directory_from_xbox("/C/foo/")
 
-        assert modifier.get_xbox_directory_contents("/C/") == [], "directory was deleted"
+        assert (
+            modifier.get_xbox_directory_contents("/C/") == []
+        ), "directory was deleted"
 
 
 def test_delete_directory_with_content(xqemu_blank_hdd_template: XQEMUHDDTemplate):
@@ -106,10 +111,15 @@ def test_delete_directory_with_content(xqemu_blank_hdd_template: XQEMUHDDTemplat
         modifier.add_file_to_xbox(
             "/E/dir/file.txt", BytesIO(f"some content".encode("utf8"))
         )
-        assert modifier.get_xbox_directory_contents("/E/") == ["dir"], "directory exists before"
-        assert modifier.get_xbox_directory_contents("/E/dir/") == ["file.txt"], "file exists before"
+        assert modifier.get_xbox_directory_contents("/E/") == [
+            "dir"
+        ], "directory exists before"
+        assert modifier.get_xbox_directory_contents("/E/dir/") == [
+            "file.txt"
+        ], "file exists before"
 
         modifier.delete_directory_from_xbox("/E/dir/")
 
-        assert modifier.get_xbox_directory_contents("/E/") == [], "directory and file were both deleted"
-
+        assert (
+            modifier.get_xbox_directory_contents("/E/") == []
+        ), "directory and file were both deleted"
