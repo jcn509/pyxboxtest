@@ -177,7 +177,7 @@ def test_file_copy(
                 modifier.get_xbox_directory_contents(new_parent_path) == []
             ), f"new directory: {new_parent_path} contains nothing"
 
-        modifier.copy_xbox_file(original_file_path, new_file_path)
+        modifier.copy_file_on_xbox(original_file_path, new_file_path)
 
         assert modifier.get_xbox_directory_contents(new_parent_path) == [
             new_filename

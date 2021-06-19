@@ -37,7 +37,7 @@ class XQEMUHDDImageModifer(AbstractContextManager):
         validate_xbox_file_path(xbox_file_path)
         self._ftp_client.storbinary(f"STOR {xbox_file_path}", to_upload)
 
-    def copy_xbox_file(self, file_path: str, copy_to_file_path: str) -> None:
+    def copy_file_on_xbox(self, file_path: str, copy_to_file_path: str) -> None:
         # Note: FTP server does not currently support multiple simultaneous users
         validate_xbox_file_path(file_path)
         validate_xbox_file_path(copy_to_file_path)
@@ -74,7 +74,7 @@ class XQEMUHDDImageModifer(AbstractContextManager):
             # FTP server doesn't support this properly right now :/
             raise RuntimeError("Need to patch in support for moving accross drives")
             # Need to recursively copy all files/subdirs and then delete the old dir
-            self.copy_xbox_file(old_directory_path, new_directory_path)
+            self.copy_file_on_xbox(old_directory_path, new_directory_path)
             self.delete_file_from_xbox(old_directory_path)
 
     def get_xbox_directory_contents(self, directory_path: str) -> List[str]:
@@ -109,7 +109,7 @@ class XQEMUHDDImageModifer(AbstractContextManager):
             self._ftp_client.rename(old_file_path, new_file_path)
         else:
             # FTP server doesn't support this properly right now :/
-            self.copy_xbox_file(old_file_path, new_file_path)
+            self.copy_file_on_xbox(old_file_path, new_file_path)
             self.delete_file_from_xbox(old_file_path)
 
     def __exit__(self, exc_type, exc_value, traceback):

@@ -28,13 +28,65 @@ class HDDModification(ABC):
 class AddFile(HDDModification):
     """Add a file to a HDD template"""
 
-    xbox_filename: str
+    file_path: str
     file_contents: IO
 
     @overrides
     def perform_modification(self, hdd_modifier: XQEMUHDDImageModifer) -> None:
         """Add the file"""
-        hdd_modifier.add_file_to_xbox(self.xbox_filename, self.file_contents)
+        hdd_modifier.add_file_to_xbox(self.file_path, self.file_contents)
+
+
+@dataclass(frozen=True)
+class CopyFile(HDDModification):
+    """Copy a file inside a HDD template"""
+
+    file_path: str
+    copy_to_file_path: str
+
+    @overrides
+    def perform_modification(self, hdd_modifier: XQEMUHDDImageModifer) -> None:
+        """Add the file"""
+        hdd_modifier.copy_file_on_xbox(self.file_path, self.copy_to_file_path)
+
+
+@dataclass(frozen=True)
+class AddDirectory(HDDModification):
+    """Add a directory to a HDD template"""
+
+    directory_path: str
+
+    @overrides
+    def perform_modification(self, hdd_modifier: XQEMUHDDImageModifer) -> None:
+        """Add the file"""
+        hdd_modifier.add_directory_to_xbox(self.directory_path)
+
+
+@dataclass(frozen=True)
+class DeleteDirectory(HDDModification):
+    """Delete a directory from a HDD template"""
+
+    directory_path: str
+
+    @overrides
+    def perform_modification(self, hdd_modifier: XQEMUHDDImageModifer) -> None:
+        """Add the file"""
+        hdd_modifier.delete_directory_from_xbox(self.directory_path)
+
+
+@dataclass(frozen=True)
+class RenameDirectory(HDDModification):
+    """Rename (or move) a directory on a HDD template"""
+
+    old_directory_path: str
+    new_directory_path: str
+
+    @overrides
+    def perform_modification(self, hdd_modifier: XQEMUHDDImageModifer) -> None:
+        """Rename the file"""
+        hdd_modifier.rename_directory_on_xbox(
+            self.old_directory_path, self.new_directory_path
+        )
 
 
 @dataclass(frozen=True)
@@ -68,7 +120,7 @@ class BatchModification(HDDModification):
 
     Useful if you want to reuse a sequence of operations on different
     templates that don't share a common parent, or if you want to give a
-    meaninful name to the sequence
+    meaningful name to the sequence
     """
 
     modifications: Tuple[HDDModification, ...]
