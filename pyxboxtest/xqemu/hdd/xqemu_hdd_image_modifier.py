@@ -55,6 +55,28 @@ class XQEMUHDDImageModifer(AbstractContextManager):
         validate_xbox_directory_path(directory_path)
         remove_ftp_dir(self._ftp_client, directory_path)
 
+    def rename_directory_on_xbox(
+        self, old_directory_path: str, new_directory_path: str
+    ) -> None:
+        """Rename (or move) a directory on the Xbox
+        :param old_directory_path: file_path on the Xbox of the file to be renamed
+        :param new_directory_path: file_path after the renaming
+        """
+        validate_xbox_directory_path(old_directory_path)
+        validate_xbox_directory_path(new_directory_path)
+        # Have to check if drive is the same as NXDK move only works in the same drive
+        on_same_drive = old_directory_path[1] == new_directory_path[1]
+        if on_same_drive:
+            # Can't include the / on the end?
+            # Should any directory paths include the /?
+            self._ftp_client.rename(old_directory_path[:-1], new_directory_path[:-1])
+        else:
+            # FTP server doesn't support this properly right now :/
+            raise RuntimeError("Need to patch in support for moving accross drives")
+            # Need to recursively copy all files/subdirs and then delete the old dir
+            self.copy_xbox_file(old_directory_path, new_directory_path)
+            self.delete_file_from_xbox(old_directory_path)
+
     def get_xbox_directory_contents(self, directory_path: str) -> List[str]:
         validate_xbox_directory_path(directory_path)
         return self._ftp_client.nlst(directory_path)
