@@ -1,4 +1,5 @@
 """Tests for :py:class:`~pyxboxtest.xqemu.hdd.XQEMUHDDTemplate`"""
+from io import StringIO
 import os
 import subprocess
 from typing import Tuple
@@ -115,10 +116,10 @@ class TestWithoutCreatingImage:
     @pytest.mark.parametrize(
         "template_name, hdd_modifications",
         (
-            ("template1", (AddFile("test1", "test2"),)),
+            ("template1", (AddFile("test1", StringIO("test2")),)),
             ("asdasd", (RenameFile("old", "new"),)),
             ("template2", (RenameFile("old", "new"), DeleteFile("test"))),
-            ("testtesttest", (AddFile("one", "two"), DeleteFile("3"))),
+            ("testtesttest", (AddFile("one", StringIO("two")), DeleteFile("3"))),
         ),
     )
     def test_modifications_applied_correctly(
@@ -194,12 +195,12 @@ class TestWithoutCreatingImage:
     @pytest.mark.parametrize(
         "child_template_name, parent_hdd_modifications, child_hdd_modifications",
         (
-            ("child", tuple(), (AddFile("test1", "test2"),)),
+            ("child", tuple(), (AddFile("test1", StringIO("test2")),)),
             ("template", (RenameFile("old", "new"),), tuple()),
             (
                 "adads",
                 (RenameFile("old", "new"), DeleteFile("test")),
-                (AddFile("one", "two"), DeleteFile("3")),
+                (AddFile("one", StringIO("two")), DeleteFile("3")),
             ),
         ),
     )

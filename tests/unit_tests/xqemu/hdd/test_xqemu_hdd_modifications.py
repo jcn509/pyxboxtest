@@ -115,6 +115,21 @@ def test_rename_file(
     )
 
 
+@pytest.mark.parametrize("old_directory_path, new_directory_path", (("a", "b"), ("local", "xbox")))
+def test_rename_directory(
+    old_directory_path: str, new_directory_path: str, mock_xqemu_hdd_image_modifier
+):
+    """Ensures that :py:class:`pyxboxtest.xqemu.hdd.RenameDirectory` actually renames the
+    directory on the HDD
+    """
+    RenameDirectory(old_directory_path, new_directory_path).perform_modification(
+        mock_xqemu_hdd_image_modifier
+    )
+    mock_xqemu_hdd_image_modifier.rename_directory_on_xbox.assert_called_once_with(
+        old_directory_path, new_directory_path
+    )
+
+
 @pytest.mark.parametrize("num_modifications", tuple(range(1, 10)))
 def test_batch_modification(
     num_modifications: int, mock_xqemu_hdd_image_modifier, mocker
