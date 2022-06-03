@@ -35,30 +35,18 @@ jobs:
       run: | # pytype installation has started failing under Windows so for now we do this messy bodge...
         python -m pip install --upgrade pip
         pip install pipenv
-        if [ "$RUNNER_OS" == "Windows" ]; then
-            pipenv lock --dev -r | grep -v pytype > requirements.txt
-            rm Pipfile
-            rm Pipfile.lock
-            pipenv install -r requirements.txt
-        else
-            pipenv install --dev
-        fi
+        pipenv install --dev
     - name: Check that Pipfile and setup.py dependencies are in sync
       shell: bash
-      run: | # Can't run this on Windows due to the bodge above...
-        if [ "$RUNNER_OS" != "Windows" ]; then
-          pipenv run pipenv-setup check
-        fi
+      run: | 
+        pipenv run pipenv-setup check
     - name: Lint the code with pylint
       run: |
         pipenv run pylint --fail-under=9 pyxboxtest tests
     - name: Type check with pytype
-      # pytype fails on Windows, not too much of a big deal so just ignoring it for now
       shell: bash
       run: |
-        if [ "$RUNNER_OS" != "Windows" ]; then
-            pipenv run pytype pyxboxtest tests
-        fi
+        pipenv run pytype pyxboxtest tests
     - name: Test with pytest
       # Will find a way to avoid the flags
       # Can only run unit tests as e2e tests need a BIOS and MCPX ROM
