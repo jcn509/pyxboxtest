@@ -1,4 +1,5 @@
 # WIP [XQEMU](https://github.com/xqemu/xqemu)-based end-to-end test framework for Xbox software built with the [nxdk](https://github.com/XboxDev/nxdk)
+As this project is still a work in progress I cannot guarantee that the API will be in anyway stable
 # Build status
 ![pyxboxtest](https://github.com/jcn509/pyxboxtest/workflows/pyxboxtest/badge.svg)
 
@@ -50,8 +51,6 @@ Until I clean up this readme and write some proper docs, you can see some sample
 - Add a "stock" built in HDD image that has TDATA/UDATA/whatever else a game/app might expect that isn't copyrighted
 - Logging
   - including redirecting xqemu standard out/error!
-- Ability to throw away all unread KD data (makes it easier to get the latest lines)
-  -  Need to update controller sample test once this is done
 - Investigate using a unit testing framework that runs "on the Xbox itself" (i.e. inside xqemu).
   - Using that along with this library we could run Xbox specific unit tests, this could be really useful for testing the NXDK or xqemu!
 
